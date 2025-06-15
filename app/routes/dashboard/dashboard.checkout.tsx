@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { CheckCircle, Crown, CreditCard, XCircle } from "lucide-react"; // Icons for success, premium, payment, error
 import { useState, useEffect } from "react";
-import Link from "next/link"; // Assuming Next.js for routing
+import { Link } from "react-router"; // Assuming Next.js for routing
 
 // Define a type for your user's subscription
 interface UserSubscription {
@@ -177,7 +177,7 @@ export default function PaymentManagement() {
           </CardTitle>
           {userSubscription?.tier !== 'Enterprise' && ( // Enterprise Tier는 '문의하기'이므로 제외
             <Button variant="outline" asChild>
-              <Link href="/settings/payment-history">
+              <Link to="/settings/payment-history">
                 결제 내역 보기
               </Link>
             </Button>

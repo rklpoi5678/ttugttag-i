@@ -8,7 +8,7 @@ import {
   FileText, // 추가적으로 활용할 수 있는 아이콘
   LayoutGrid, // 그리드 레이아웃 관련 아이콘
 } from "lucide-react"
-import Link from "next/link"
+import {Link} from "react-router"
 import { useState } from "react"
 import { Input } from "@/components/ui/input" // Input 컴포넌트를 가정하여 추가
 
@@ -108,7 +108,7 @@ export default function DesignMockupList() {
           <p className="text-lg text-gray-600 dark:text-gray-400 mt-1">당신의 아이디어를 빠르고 쉽게 시각화하고 관리하세요.</p>
         </div>
         <Button className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-6 py-3 rounded-lg shadow-md transition-all duration-300 transform hover:scale-105"> {/* 버튼 스타일 조정 */}
-          <Link href="/sketches"> {/* 목업 생성 페이지 경로 */}
+          <Link to="/sketches"> {/* 목업 생성 페이지 경로 */}
             새 목업 만들기
           </Link>
         </Button>
@@ -137,7 +137,7 @@ export default function DesignMockupList() {
             <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">아직 디자인 목업이 없습니다</h3>
             <p className="text-lg text-gray-600 dark:text-gray-400 mb-8">첫 번째 아이디어를 시각화하고 검증을 시작하세요!</p>
             <Button className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-8 py-3 rounded-lg shadow-lg transition-all duration-300 transform hover:scale-105">
-              <Link href="/designs/new">
+              <Link to="/designs/new">
                 <Plus className="mr-2 h-5 w-5" />
                 새 목업 만들기
               </Link>
@@ -149,7 +149,7 @@ export default function DesignMockupList() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-8">
           {filteredMockups.map((mockup) => (
             <Card key={mockup.id} className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-xl shadow-md overflow-hidden transform hover:scale-102 hover:shadow-lg transition-all duration-300 cursor-pointer">
-              <Link href={`/designs/${mockup.id}/edit`}> {/* 목업 수정 페이지로 링크 */}
+              <Link to={`/designs/${mockup.id}/edit`}> {/* 목업 수정 페이지로 링크 */}
                 {/* <img
                   src={mockup.imageUrl}
                   alt={mockup.name}
@@ -161,7 +161,7 @@ export default function DesignMockupList() {
                 <div>
                   <div className="flex justify-between items-start mb-2">
                     <h3 className="text-xl font-semibold text-gray-900 dark:text-white leading-tight">
-                      <Link href={`/designs/${mockup.id}/edit`} className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200">
+                      <Link to={`/designs/${mockup.id}/edit`} className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200">
                         {mockup.name}
                       </Link>
                     </h3>
@@ -187,7 +187,7 @@ export default function DesignMockupList() {
                   <span>최근 수정: {mockup.lastEdited}</span>
                   <div className="flex gap-2">
                     <Button variant="ghost" size="sm" className="p-1 h-auto text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-gray-700">
-                      <Link href={`/designs/${mockup.id}/preview`}>미리보기</Link>
+                      <Link to={`/designs/${mockup.id}/preview`}>미리보기</Link>
                     </Button>
                     <Button variant="ghost" size="sm" className="p-1 h-auto text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-700">
                       공유

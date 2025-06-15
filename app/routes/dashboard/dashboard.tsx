@@ -1,6 +1,6 @@
 import { useState } from "react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
+import {Link} from "react-router"
+import { useLocation } from "react-router"
 import { Button } from "@/components/ui/button"
 import {
   Home,
@@ -43,7 +43,7 @@ const sidebarItems = [
 
 export default function SellerLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const pathname = usePathname()
+  const location = useLocation()
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -72,11 +72,11 @@ export default function SellerLayout() {
             <div className="flex-1 px-3 py-4 overflow-y-auto">
               <div className="space-y-1">
                 {sidebarItems.map((item) => {
-                  const isActive = pathname === item.href
+                  const isActive = location.pathname === item.href
                   return (
                     <Link
                       key={item.href}
-                      href={item.href}
+                      to={item.href}
                       className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                         isActive 
                           ? "bg-gradient-to-r from-pink-500 to-purple-600 text-white" 

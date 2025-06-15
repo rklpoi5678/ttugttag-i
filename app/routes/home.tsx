@@ -1,12 +1,11 @@
 
 {/* section components */}
-import Script from 'next/script';
-import HeroSection from "../../src/components/landing/HeroSection";
-import FeaturesSection from "../../src/components/landing/FeaturesSection";
-import Navigation from "../../src/components/landing/Navigation";
+import HeroSection from "@/components/landing/HeroSection";
+import FeaturesSection from "@/components/landing/FeaturesSection";
+import Navigation from "@/components/landing/Navigation";
 // import TestimonialsSection from '../components/landing/TestimonialsSection';
-import CTASection from '../../src/components/landing/CTASection';
-import Footer from '../../src/components/landing/Footer';
+import CTASection from '@/components/landing/CTASection';
+import Footer from '@/components/landing/Footer';
 
 export function meta() {
   return [
@@ -27,22 +26,6 @@ export default function LandingPage() {
 
   return (
     <>
-      <Script
-        strategy="afterInteractive"
-        src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}
-      />
-      <Script
-        id="google-analytics"
-        strategy="afterInteractive"
-        dangerouslySetInnerHTML={{
-          __html: `
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', '${process.env.NEXT_PUBLIC_GA_ID}');
-          `,
-        }}
-      />
     <div>
       {/* Navigation */}
       <Navigation />

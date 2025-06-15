@@ -1,5 +1,3 @@
-'use client'
-
 import {Link, useNavigate} from 'react-router'
 
 export default function Navigation() {

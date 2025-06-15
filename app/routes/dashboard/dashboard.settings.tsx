@@ -4,8 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
+import {Link} from "react-router"
+import { useLocation } from "react-router"
 
 export default function SellerSettingPage() {
   const [email, setEmail] = useState("kjdeok87@gmail.com")
@@ -21,7 +21,7 @@ export default function SellerSettingPage() {
   const [currency, setCurrency] = useState("KRW")
   const [parity, setParity] = useState(false)
   const [adult, setAdult] = useState(false)
-  const pathname = usePathname()
+  const location = useLocation()
   const tabs = [
     { label: "설정", href: "/dashboard/settings" },
     { label: "프로필", href: "/dashboard/settings/profile" },
@@ -35,9 +35,9 @@ export default function SellerSettingPage() {
           {tabs.map(tab => (
             <Link
               key={tab.href}
-              href={tab.href}
+              to={tab.href}
               className={`px-4 py-2 -mb-px border-b-2 text-sm font-medium transition-colors duration-150
-                ${pathname === tab.href ? "border-pink-500 text-pink-600 dark:text-pink-400" : "border-transparent text-gray-500 hover:text-pink-500"}`}
+                ${location.pathname === tab.href ? "border-pink-500 text-pink-600 dark:text-pink-400" : "border-transparent text-gray-500 hover:text-pink-500"}`}
             >
               {tab.label}
             </Link>

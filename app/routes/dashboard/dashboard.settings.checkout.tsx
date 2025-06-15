@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { usePathname } from "next/navigation"
-import Link from "next/link"
+import { useLocation } from "react-router"
+import {Link} from "react-router"
 import { CheckCircle, XCircle, CreditCard, Clock, Calendar, Crown } from "lucide-react" // 필요한 아이콘 추가
 import { Badge } from "@/components/ui/badge" // shadcn/ui의 Badge 컴포넌트 사용 가정
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table" // shadcn/ui의 Table 컴포넌트 사용 가정
@@ -34,7 +34,7 @@ export default function PaymentHistoryPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const pathname = usePathname();
+  const location = useLocation();
   const tabs = [
     { label: "설정", href: "/dashboard/settings" },
     { label: "프로필", href: "/dashboard/settings/profile" },
@@ -181,9 +181,9 @@ export default function PaymentHistoryPage() {
           {tabs.map(tab => (
             <Link
               key={tab.href}
-              href={tab.href}
+              to={tab.href}
               className={`px-4 py-3 -mb-px border-b-2 text-base font-semibold transition-colors duration-150
-                ${pathname === tab.href ? "border-blue-500 text-blue-600 dark:text-blue-400" : "border-transparent text-gray-500 hover:text-blue-500 dark:hover:text-blue-400"}`} // 색상 조정
+                ${location.pathname === tab.href ? "border-blue-500 text-blue-600 dark:text-blue-400" : "border-transparent text-gray-500 hover:text-blue-500 dark:hover:text-blue-400"}`} // 색상 조정
             >
               {tab.label}
             </Link>
@@ -200,7 +200,7 @@ export default function PaymentHistoryPage() {
                 현재 구독 정보
               </CardTitle>
               <Button asChild variant="outline" className="text-sm">
-                <Link href="/dashboard/settings/checkout"> {/* 결제 관리 페이지로 이동 */}
+                <Link to="/dashboard/settings/checkout"> {/* 결제 관리 페이지로 이동 */}
                   플랜 변경 또는 관리
                 </Link>
               </Button>

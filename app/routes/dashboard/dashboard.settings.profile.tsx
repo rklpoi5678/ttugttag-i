@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { usePathname } from "next/navigation"
+import { useLocation } from "react-router"
 import { Link } from "react-router"
 
 export default function SellerProfilePage() {
@@ -11,7 +11,7 @@ export default function SellerProfilePage() {
   const [nickname, setNickname] = useState("")
   const [bio, setBio] = useState("")
   const [phone, setPhone] = useState("")
-  const pathname = usePathname()
+  const location = useLocation()
   const tabs = [
     { label: "설정", href: "/dashboard/settings" },
     { label: "프로필", href: "/dashboard/settings/profile" },
@@ -28,7 +28,7 @@ export default function SellerProfilePage() {
               key={tab.href}
               to={tab.href}
               className={`px-4 py-2 -mb-px border-b-2 text-sm font-medium transition-colors duration-150
-                ${pathname === tab.href ? "border-pink-500 text-pink-600 dark:text-pink-400" : "border-transparent text-gray-500 hover:text-pink-500"}`}
+                ${location.pathname === tab.href ? "border-pink-500 text-pink-600 dark:text-pink-400" : "border-transparent text-gray-500 hover:text-pink-500"}`}
             >
               {tab.label}
             </Link>
