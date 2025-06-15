@@ -7,7 +7,15 @@
     "app/**/.client/**/*",
     "database/**/*",
     "workers/**/*",
-    "worker-configuration.d.ts"
+    "worker-configuration.d.ts",
+    "src/components",
+    "src/lib",
+    "src/hooks",
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "build",
   ],
   "compilerOptions": {
     "composite": true,
@@ -22,7 +30,10 @@
     "rootDirs": [".", "./.react-router/types"],
     "paths": {
       "~/database/*": ["./database/*"],
-      "~/*": ["./app/*"]
+      "~/*": ["./app/*"],
+      "@/components/*": ["./src/components/*"],
+      "@/lib/*": ["./src/lib/*"],
+      "@/hooks/*": ["./src/hooks/*"],
     },
     "esModuleInterop": true,
     "resolveJsonModule": true

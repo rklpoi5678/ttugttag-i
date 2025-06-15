@@ -5,4 +5,11 @@ export default {
   future: {
     unstable_viteEnvironmentApi: true,
   },
+  async prerender() {
+    return [
+      { path: "/" },
+      { path: "/prices" },
+      { path: "/contact" },
+    ];
+  },
 } satisfies Config;

@@ -19,96 +19,123 @@ export function Welcome({
 
   return (
     <main className="flex items-center justify-center pt-16 pb-4">
-      <div className="flex-1 flex flex-col items-center gap-16 min-h-0">
-        <header className="flex flex-col items-center gap-9">
-          <div className="w-[500px] max-w-[100vw] p-4">
-            <img
-              src={logoLight}
-              alt="React Router"
-              className="block w-full dark:hidden"
-            />
-            <img
-              src={logoDark}
-              alt="React Router"
-              className="hidden w-full dark:block"
-            />
-          </div>
-        </header>
-        <div className="max-w-[300px] w-full space-y-6 px-4">
-          <nav className="rounded-3xl border border-gray-200 p-6 dark:border-gray-700 space-y-4">
-            <p className="leading-6 text-gray-700 dark:text-gray-200 text-center">
-              What&apos;s next?
-            </p>
-            <ul>
-              {resources.map(({ href, text, icon }) => (
-                <li key={href}>
-                  <a
-                    className="group flex items-center gap-3 self-stretch p-3 leading-normal text-blue-700 hover:underline dark:text-blue-500"
-                    href={href}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    {icon}
-                    {text}
-                  </a>
-                </li>
-              ))}
-              <li className="self-stretch p-3 leading-normal">{message}</li>
-            </ul>
-          </nav>
-          <section className="rounded-3xl border border-gray-200 p-6 dark:border-gray-700 space-y-4">
-            <Form
-              method="post"
-              className="space-y-4 w-full max-w-lg"
-              onSubmit={(event) => {
-                if (navigation.state === "submitting") {
-                  event.preventDefault();
-                }
-                const form = event.currentTarget;
-                requestAnimationFrame(() => {
-                  form.reset();
-                });
-              }}
+        <nav className="fixed top-0 w-full bg-white/80 backdrop-blur-sm z-50 border-b">
+      <div className="container mx-auto px-4 py-4">
+        <div className="flex justify-between items-center">
+          <Link href="/">
+            <div className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">
+              MetaOS
+            </div>
+          </Link>
+
+          <div className="hidden md:flex items-center space-x-8">
+            <Link href="/info/about" className="text-gray-600 hover:text-blue-600 transition-colors">
+              {t('about')}
+            </Link>
+            <Link href="https://nextra-blog-3t4s.vercel.app" className="text-gray-600 hover:text-blue-600 transition-colors">
+              {t('blog')}
+            </Link>
+            <a 
+              href="https://portfolio-six-nu-90.vercel.app/" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="text-gray-600 hover:text-blue-600 transition-colors"
             >
-              <input
-                aria-label="Name"
-                name="name"
-                placeholder="Name"
-                required
-                className="w-full dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 dark:focus:ring-blue-500 h-10 px-3 rounded-lg border border-gray-200 focus:ring-1 focus:ring-blue-500"
-              />
-              <input
-                aria-label="Email"
-                name="email"
-                type="email"
-                placeholder="your@email.com"
-                required
-                className="w-full dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 dark:focus:ring-blue-500 h-10 px-3 rounded-lg border border-gray-200 focus:ring-1 focus:ring-blue-500"
-              />
-              <button
-                type="submit"
-                disabled={navigation.state === "submitting"}
-                className="w-full h-10 px-3 text-white bg-blue-500 rounded-lg hover:bg-blue-600"
-              >
-                Sign Guest Book
-              </button>
-              {guestBookError && (
-                <p className="text-red-500 dark:text-red-400">
-                  {guestBookError}
-                </p>
-              )}
-            </Form>
-            <ul className="text-center">
-              {<li className="p-3">{message}</li>}
-              {guestBook.map(({ id, name }) => (
-                <li key={id} className="p-3">
-                  {name}
-                </li>
-              ))}
-            </ul>
-          </section>
+              {t('portfolio')}
+            </a>
+            <Link href="/tools/pdf-generator" className="text-gray-600 hover:text-blue-600 transition-colors">
+              {t('pdfGenerator')}
+            </Link>
+          </div>
+
+          <button
+            className="md:hidden p-2"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
+            <svg className="w-6 h-6" fill="none" stroke="black" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+
+          {isMobileMenuOpen && (
+            <div className="md:hidden absolute top-16 left-0 right-0 bg-white border-t">
+              <div className="container mx-auto px-4 py-2 space-y-2">
+                <Link href="/info/about" className="block py-2 text-gray-600 hover:text-blue-600">
+                  {t('about')}
+                </Link>
+                <a href="https://nextra-blog-3t4s.vercel.app" className="block py-2 text-gray-600 hover:text-blue-600">
+                  {t('blog')}
+                </a>
+                <Link href="/tools/pdf-generator" className="block py-2 text-gray-600 hover:text-blue-600">
+                  {t('pdfGenerator')}
+                </Link>
+                {user ? (
+                  <>
+                    <Link href="/dashboard" className="block py-2 text-gray-600 hover:text-blue-600">
+                      {t('dashboard')}
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="block w-full py-2 text-gray-600 hover:text-blue-600"
+                    >
+                      {t('logout')}
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Link href="/auth/signin" className="block py-2 text-gray-600 hover:text-blue-600">
+                      {t('login')}
+                    </Link>
+                    <Link
+                      href="/auth/signup"
+                      className="block py-2 text-blue-600 hover:text-blue-700"
+                    >
+                      {t('getStarted')}
+                    </Link>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+
+          <div className="hidden md:flex items-center space-x-4">
+            <LocalesSetting />
+            {user ? (
+              <>
+                <Link 
+                  href="/dashboard" 
+                  className="text-sm text-gray-600 hover:text-blue-600 transition-colors"
+                >
+                  {t('dashboard')}
+                </Link>
+                <button 
+                  onClick={handleLogout}
+                  className="text-sm px-3 py-1.5 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors"
+                >
+                  {t('logout')}
+                </button>
+              </>
+            ) : (
+              <>
+                <Link 
+                  href="/auth/signin" 
+                  className="text-sm text-gray-600 hover:text-blue-600 transition-colors"
+                >
+                  {t('login')}
+                </Link>
+                <Link 
+                  href="/auth/signup"
+                  className="text-sm px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  {t('getStarted')}
+                </Link>
+              </>
+            )}
+          </div>
         </div>
       </div>
+    </nav>
+  )
     </main>
   );
 }

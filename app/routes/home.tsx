@@ -1,56 +1,67 @@
-import * as schema from "~/database/schema";
 
-import type { Route } from "./+types/home";
-import { Welcome } from "../welcome/welcome";
+{/* section components */}
+import Script from 'next/script';
+import HeroSection from "../../src/components/landing/HeroSection";
+import FeaturesSection from "../../src/components/landing/FeaturesSection";
+import Navigation from "../../src/components/landing/Navigation";
+// import TestimonialsSection from '../components/landing/TestimonialsSection';
+import CTASection from '../../src/components/landing/CTASection';
+import Footer from '../../src/components/landing/Footer';
 
-export function meta({}: Route.MetaArgs) {
+export function meta() {
   return [
-    { title: "New React Router App" },
-    { name: "description", content: "Welcome to React Router!" },
-  ];
-}
-
-export async function action({ request, context }: Route.ActionArgs) {
-  const formData = await request.formData();
-  let name = formData.get("name");
-  let email = formData.get("email");
-  if (typeof name !== "string" || typeof email !== "string") {
-    return { guestBookError: "Name and email are required" };
-  }
-
-  name = name.trim();
-  email = email.trim();
-  if (!name || !email) {
-    return { guestBookError: "Name and email are required" };
-  }
-
-  try {
-    await context.db.insert(schema.guestBook).values({ name, email });
-  } catch (error) {
-    return { guestBookError: "Error adding to guest book" };
-  }
-}
-
-export async function loader({ context }: Route.LoaderArgs) {
-  const guestBook = await context.db.query.guestBook.findMany({
-    columns: {
-      id: true,
-      name: true,
+    { title: "ttugttag-i"},
+    { 
+      property: "og:title",
+      content: "ttugttag-i main page"
     },
-  });
-
-  return {
-    guestBook,
-    message: context.cloudflare.env.VALUE_FROM_CLOUDFLARE,
-  };
+    { 
+      name: "description",
+      content: "Very fast,easy idea sketch"
+    }
+  ]
 }
 
-export default function Home({ actionData, loaderData }: Route.ComponentProps) {
+
+export default function LandingPage() {
+
   return (
-    <Welcome
-      guestBook={loaderData.guestBook}
-      guestBookError={actionData?.guestBookError}
-      message={loaderData.message}
-    />
+    <>
+      <Script
+        strategy="afterInteractive"
+        src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}
+      />
+      <Script
+        id="google-analytics"
+        strategy="afterInteractive"
+        dangerouslySetInnerHTML={{
+          __html: `
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '${process.env.NEXT_PUBLIC_GA_ID}');
+          `,
+        }}
+      />
+    <div>
+      {/* Navigation */}
+      <Navigation />
+
+      {/* 1. Hero Section */}
+      <HeroSection />
+
+      {/* 3. Features */}
+      <FeaturesSection />
+
+      {/* 5. Testimonials
+      <TestimonialsSection /> */}
+
+      {/* 6. CTA */}
+      <CTASection />
+
+      {/* 7. Footer */}
+      <Footer />
+    </div>
+    </>
   );
 }
