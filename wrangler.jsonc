@@ -5,7 +5,9 @@
   "main": "./workers/app.ts",
   "vars": {
     "VALUE_FROM_CLOUDFLARE": "Hello from Cloudflare",
-    "RESEND_API_KEY": "re_F2e8kpCD_9gH4d7ZPVUeNomVCuXb5xMcM"
+    "RESEND_API_KEY": "re_F2e8kpCD_9gH4d7ZPVUeNomVCuXb5xMcM",
+    "CLERK_SECRET_KEY": "sk_test_j3hCyKQD0DCNjdFuPb422tlLv4QaMGGC4n7a8Q3SO6",
+    "CLERK_PUBLISHABLE_KEY": "pk_test_aW4tYXNwLTk2LmNsZXJrLmFjY291bnRzLmRldiQ",
   },
   "d1_databases": [
     {

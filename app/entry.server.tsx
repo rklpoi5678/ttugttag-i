@@ -2,6 +2,8 @@ import type { AppLoadContext, EntryContext } from "react-router";
 import { ServerRouter } from "react-router";
 import { isbot } from "isbot";
 import { renderToReadableStream } from "react-dom/server";
+import * as Sentry from "@sentry/react-router";
+import { type HandleErrorFunction } from 'react-router'
 
 export default async function handleRequest(
   request: Request,
@@ -41,3 +43,14 @@ export default async function handleRequest(
     status: responseStatusCode,
   });
 }
+
+export const handleError: HandleErrorFunction = (error, { request }) => {
+  // React Router는 중단된 요청을 취소할 수 있으므로, 해당 오류는 로깅하지 않습니다.
+  // HTTP 응답 오류가 아니거나, 요청이 중단된 경우에만 Sentry에 전송합니다.
+  if (!request.signal.aborted) {
+    Sentry.captureException(error);
+    // 선택적으로 오류를 콘솔에 로깅하여 서버 로그에서 볼 수 있도록 합니다.
+    console.error(error);
+  }
+};
+  
