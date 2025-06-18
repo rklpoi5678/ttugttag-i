@@ -1,14 +1,6 @@
-import { Form, useActionData, useNavigation, type ActionFunctionArgs } from "react-router"
+import { Form, useActionData, useNavigation } from "react-router"
 import { Resend } from "resend";
-import { EmailTemplate } from "@/components/email-template";
-
-declare global {
-  interface Window {
-    env: {
-      RESEND_API_KEY: string;
-    };
-  }
-}
+import type { Route } from "../+types/home";
 
 interface ActionData {
   success?: boolean;
@@ -21,17 +13,24 @@ interface ActionData {
     server?: string;
   };
 }
+const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL;
 
-export async function loader() {
-  console.log(process.env.RESEND_API_KEY)
+export async function loader({request}: Route.LoaderArgs) {
+  const apiKey = import.meta.env.VITE_RESEND_API_KEY;
+
+  if (!apiKey) {
+    throw new Error("VITE_RESEND_API_KEY is not defined in loader.");
+  }
+
+  return Response.json({ message: "Loader executed, API key checked." });
 }
 
-export async function action({ request }: ActionFunctionArgs) {
-  const resend = new Resend(process.env.RESEND_API_KEY);
+export async function action({ request }: Route.ActionArgs) {
+  const resend = new Resend(import.meta.env.VITE_RESEND_API_KEY);
   
-  if (!process.env.RESEND_API_KEY) {
-    console.error('RESEND_API_KEY is not defined');
-    return Response.json({ message: 'RESEND_API_KEY is not defined' }, { status: 500 });
+  if (!import.meta.env.VITE_RESEND_API_KEY) {
+    console.error('VITE_RESEND_API_KEY is not defined');
+    return Response.json({ message: 'VITE_RESEND_API_KEY is not defined' }, { status: 500 });
   }
 
   const formData = await request.formData();
@@ -52,13 +51,48 @@ export async function action({ request }: ActionFunctionArgs) {
       message: '모든 필드를 채워주세요'
     }, { status: 400 });
   }
-
+  const htmlContent = `
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <meta charset="utf-8">
+    <title>새로운 문의가 접수되었습니다</title>
+    <style>
+      body { font-family: sans-serif; line-height: 1.6; color: #333; }
+      .container { max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 8px; }
+      .header { background-color: #f6f6f6; padding: 10px 20px; border-bottom: 1px solid #eee; }
+      .content { padding: 20px; }
+      .footer { text-align: center; font-size: 0.8em; color: #777; margin-top: 20px; }
+      .info-label { font-weight: bold; margin-bottom: 5px; display: block;}
+      .info-value { margin-bottom: 10px; display: block;}
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h2>새로운 문의가 접수되었습니다.</h2>
+      </div>
+      <div class="content">
+        <p><span class="info-label">보낸 분:</span> <span class="info-value">${name}</span></p>
+        <p><span class="info-label">이메일 주소:</span> <span class="info-value">${email}</span></p>
+        <p><span class="info-label">제목:</span> <span class="info-value">${subject}</span></p>
+        <p><span class="info-label">메시지:</span></p>
+        <p>${message.replace(/\n/g, '<br>')}</p>
+      </div>
+      <div class="footer">
+        <p>이 이메일은 문의 양식을 통해 자동 발송되었습니다.</p>
+      </div>
+    </div>
+  </body>
+  </html>
+`;
   try {
     const { data, error } = await resend.emails.send({
       from: 'Acme <onboarding@resend.dev>',
-      to: [email],
-      subject: subject,
-      react: <EmailTemplate firstName={name} message={message} />
+      to: [ADMIN_EMAIL],
+      subject: `[문의] ${subject} - From: ${name} (${email})`,
+      html: htmlContent,
+      replyTo: email,
     });
 
     if (error) {

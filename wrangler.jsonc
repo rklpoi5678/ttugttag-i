@@ -4,7 +4,8 @@
   "compatibility_date": "2025-04-04",
   "main": "./workers/app.ts",
   "vars": {
-    "VALUE_FROM_CLOUDFLARE": "Hello from Cloudflare"
+    "VALUE_FROM_CLOUDFLARE": "Hello from Cloudflare",
+    "RESEND_API_KEY": "re_F2e8kpCD_9gH4d7ZPVUeNomVCuXb5xMcM"
   },
   "d1_databases": [
     {
