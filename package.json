@@ -25,6 +25,7 @@
     "@radix-ui/react-switch": "^1.2.5",
     "@react-email/components": "0.1.0",
     "@react-email/render": "1.1.2",
+    "@sentry/react-router": "^9.30.0",
     "@tldraw/sync": "^3.13.1",
     "@types/lodash.capitalize": "^4.2.9",
     "class-variance-authority": "^0.7.1",
