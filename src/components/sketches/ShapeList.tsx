@@ -1,7 +1,7 @@
-import { capitalize } from 'lodash'
 import { useRef, useState } from 'react'
 import { Editor, type TLShapeId, useEditor, useValue } from 'tldraw'
 import { EyeClosed, Eye } from 'lucide-react'
+
 
 const selectedBg = '#E8F4FE'
 const childSelectedBg = '#F3F9FE'
@@ -163,6 +163,7 @@ function getShapeName(editor: Editor, shapeId: TLShapeId) {
 		// meta.name is the first choice, then the shape's text, then the capitalized shape type
 		(shape.meta.name as string) ||
 		editor.getShapeUtil(shape).getText(shape) ||
-		capitalize(shape.type + ' shape')
+		// capitalize(shape.type + ' shape')
+        shape.type
 	)
 }

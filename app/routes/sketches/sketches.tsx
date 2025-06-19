@@ -1,8 +1,8 @@
-import { Tldraw, type TLComponents, useEditor, useValue} from 'tldraw';
+import { Tldraw, type TLComponents, useEditor, useValue, type TLEditorSnapshot} from 'tldraw';
+import { getAssetUrlsByMetaUrl } from '@tldraw/assets/urls'
 import 'tldraw/tldraw.css'
 import { ShapeList } from '@/components/sketches/ShapeList'
 import '../../../styles/layer.panel.css'
-import { useEffect, useState } from 'react';
 // import snapshot from './snapshot.json'
 
 const componets: TLComponents = {
@@ -15,7 +15,7 @@ const componets: TLComponents = {
     )
     return (
       <div className='layer-panel'>
-        <div className='layer-panel-title'>모양</div>
+        <div className='layer-panel-title'>레이어</div>
         <ShapeList 
           shapeIds={shapeIds}
           depth={0}
@@ -27,16 +27,18 @@ const componets: TLComponents = {
 
 export default function ProjectEditorPage() {
   // const store = useSyncDemo({ roomId: 'myapp-abc123'})
+  const assetUrls = getAssetUrlsByMetaUrl()
  
 
   return (
-    <div className='sketches-editor'>
+    <div style={{ position: 'fixed', inset: 0}}>
       <Tldraw 
-        // persistenceKey='layer-panel-examle'
+        persistenceKey='layer-panel-examle'
         components={componets}
         getShapeVisibility={(s) =>
           s.meta.force_show ? 'visible' : s.meta.hidden ? 'hidden' : 'inherit'
         }
+        assetUrls={assetUrls}
         // snapshot={snapshot as any as TLEditorSnapshot}
       />
     </div>

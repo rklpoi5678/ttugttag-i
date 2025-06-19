@@ -39,21 +39,14 @@ export default defineConfig(config => {
       "@": path.resolve(__dirname, "src"),
     },
   },
-  // build: {
-  //   sourcemap: 'hidden',
-  //   ssr: {
-  //     external: ['konva', 'react-konva']
-  //   }
-  // },
-  // ssr: {
-  //   noExternal: ['konva', 'react-konva']
-  // }
-  optimizeDeps: {
-    // 이 부분을 추가하여 @tldraw/assets를 Vite의 최적화 대상에서 제외합니다.
-    // 이렇게 하면 tldraw의 assetUrls prop이 더 잘 적용됩니다.
-    exclude: ['@tldraw/assets'],
-    // 'tldraw' 자체는 계속 포함해도 됩니다.
-    include: ['tldraw'],
+  build: {
+    sourcemap: 'hidden',
   },
-
+  // ssr: {
+  //   noExternal: ['tldraw','@tldraw/assets']
+  // },
+  optimizeDeps: {
+    exclude: ['@tldraw/assets'],
+    include:['tldraw']
+  },
 }});
