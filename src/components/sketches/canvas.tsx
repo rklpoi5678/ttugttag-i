@@ -1,158 +1,164 @@
-// src/components/Canvas.tsx
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useRef, useEffect } from 'react';
+import { useEditor, CanvasElement } from '../context/EditorContext';
 
-// 이 컴포넌트는 실제 UI 요소들의 렌더링과 상호작용을 처리하게 됩니다.
-// 현재는 임시 아트보드만 포함되어 있습니다.
-interface CanvasProps {
-  // 여기에 캔버스에 표시될 요소들 (pages, components)의 데이터가 props로 전달될 수 있습니다.
+// --- IMPORTANT: Only import Konva modules on the client-side ---
+// We use dynamic imports or conditional requires to prevent Konva's Node.js code
+// from being bundled or executed on the server (Cloudflare Workers / Bun SSR).
+let Stage: any, Layer: any, Rect: any, Circle: any, Text: any, Transformer: any, KonvaEventObject: any;
+
+// This check ensures Konva is only loaded when `window` object is available (i.e., in a browser).
+if (typeof window !== 'undefined') {
+  // Use require() for these to avoid static analysis issues during SSR build
+  // that might try to resolve 'konva' even if wrapped in 'import'.
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  ({ Stage, Layer, Rect, Circle, Text, Transformer } = require('react-konva'));
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  KonvaEventObject = require('konva/lib/Node').KonvaEventObject; // Konva types for events
 }
 
-export default function Canvas({}: CanvasProps) {
-  const [scale, setScale] = useState(1);
-  const [translateX, setTranslateX] = useState(0);
-  const [translateY, setTranslateY] = useState(0);
-  const [isPanning, setIsPanning] = useState(false);
-  const lastMousePos = useRef({ x: 0, y: 0 });
-  const canvasRef = useRef<HTMLDivElement>(null);
-
-  const [artboards, setArtboards] = useState([
-    { id: 'ab1', name: 'Web Desktop', width: 1440, height: 900, x: 100, y: 100, color: '#f0f0f0' },
-    { id: 'ab2', name: 'Mobile App', width: 375, height: 812, x: 1600, y: 100, color: '#f5f5f5' },
-    { id: 'ab3', name: 'Tablet Portrait', width: 768, height: 1024, x: 100, y: 1200, color: '#e8e8e8' },
-  ]);
-
-  const handleWheel = useCallback((e: WheelEvent) => {
-    e.preventDefault();
-    const scaleFactor = 1.1;
-    const rect = canvasRef.current?.getBoundingClientRect();
-    if (!rect) return;
-
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-
-    let newScale = scale;
-    if (e.deltaY < 0) {
-      newScale = Math.min(scale * scaleFactor, 3);
-    } else {
-      newScale = Math.max(scale / scaleFactor, 0.2);
-    }
-
-    const newTranslateX = translateX - (mouseX / scale) * (newScale - scale);
-    const newTranslateY = translateY - (mouseY / scale) * (newScale - scale);
-
-    setScale(newScale);
-    setTranslateX(newTranslateX);
-    setTranslateY(newTranslateY);
-  }, [scale, translateX, translateY]);
-
-  const handleMouseDown = useCallback((e: MouseEvent) => {
-    if (e.buttons === 1 && (e.metaKey || e.altKey || (e.view?.event instanceof KeyboardEvent && e.view.event.code === 'Space'))) {
-      e.preventDefault();
-      setIsPanning(true);
-      lastMousePos.current = { x: e.clientX, y: e.clientY };
-      canvasRef.current?.style.setProperty('cursor', 'grabbing');
-    }
-  }, []);
-
-  const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (isPanning) {
-      e.preventDefault();
-      const dx = e.clientX - lastMousePos.current.x;
-      const dy = e.clientY - lastMousePos.current.y;
-
-      setTranslateX(prev => prev + dx / scale);
-      setTranslateY(prev => prev + dy / scale);
-
-      lastMousePos.current = { x: e.clientX, y: e.clientY };
-    }
-  }, [isPanning, scale]);
-
-  const handleMouseUp = useCallback(() => {
-    setIsPanning(false);
-    canvasRef.current?.style.setProperty('cursor', 'default');
-  }, []);
-
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if (e.code === 'Space' && !e.repeat) {
-      e.preventDefault();
-      canvasRef.current?.style.setProperty('cursor', 'grab');
-    }
-  }, []);
-
-  const handleKeyUp = useCallback((e: KeyboardEvent) => {
-    if (e.code === 'Space') {
-      canvasRef.current?.style.setProperty('cursor', 'default');
-      setIsPanning(false);
-    }
-  }, []);
+// ... (ShapeRenderer component - use 'any' for KonvaEventObject for simplicity with conditional imports) ...
+const ShapeRenderer: React.FC<{
+  element: CanvasElement;
+  isSelected: boolean;
+  onSelect: () => void;
+  onChange: (newAttrs: Partial<CanvasElement>) => void;
+}> = ({ element, isSelected, onSelect, onChange }) => {
+  const shapeRef = useRef<any>(null);
+  const trRef = useRef<any>(null);
 
   useEffect(() => {
-    const canvasElement = canvasRef.current;
-    if (canvasElement) {
-      canvasElement.addEventListener('wheel', handleWheel, { passive: false });
-      canvasElement.addEventListener('mousedown', handleMouseDown);
-      canvasElement.addEventListener('mousemove', handleMouseMove);
-      canvasElement.addEventListener('mouseup', handleMouseUp);
-      window.addEventListener('keydown', handleKeyDown);
-      window.addEventListener('keyup', handleKeyUp);
-
-      return () => {
-        canvasElement.removeEventListener('wheel', handleWheel);
-        canvasElement.removeEventListener('mousedown', handleMouseDown);
-        canvasElement.removeEventListener('mousemove', handleMouseMove);
-        canvasElement.removeEventListener('mouseup', handleMouseUp);
-        window.removeEventListener('keydown', handleKeyDown);
-        window.removeEventListener('keyup', handleKeyUp);
-      };
+    if (isSelected && trRef.current && shapeRef.current) {
+      trRef.current.nodes([shapeRef.current]);
+      // Make sure the layer exists before drawing
+      trRef.current.getLayer()?.batchDraw();
     }
-  }, [handleWheel, handleMouseDown, handleMouseMove, handleMouseUp, handleKeyDown, handleKeyUp]);
+  }, [isSelected]);
+
+  const handleDragEnd = (e: any) => {
+    onChange({
+      x: e.target.x(),
+      y: e.target.y(),
+    });
+  };
+
+  const handleTransformEnd = () => {
+    const node = shapeRef.current;
+    if (!node) return;
+
+    const scaleX = node.scaleX();
+    const scaleY = node.scaleY();
+
+    node.scaleX(1);
+    node.scaleY(1);
+
+    onChange({
+      x: node.x(),
+      y: node.y(),
+      width: element.type === 'text' ? node.width() * scaleX : Math.max(5, node.width() * scaleX),
+      height: element.type === 'text' ? node.height() * scaleY : Math.max(5, node.height() * scaleY),
+      rotation: node.rotation(),
+    });
+  };
+
+  let KonvaShapeComponent: React.ComponentType<any>;
+  switch (element.type) {
+    case 'rect':
+      KonvaShapeComponent = Rect;
+      break;
+    case 'circle':
+      KonvaShapeComponent = Circle;
+      break;
+    case 'text':
+      KonvaShapeComponent = Text;
+      break;
+    default:
+      return null;
+  }
+
+  // Only render Konva shapes if Konva components are loaded (i.e., on client)
+  if (!KonvaShapeComponent) {
+    return null;
+  }
 
   return (
-    <div
-      ref={canvasRef}
-      className={`flex-grow relative overflow-hidden ${isPanning ? 'cursor-grabbing' : 'cursor-default'}`}
-      style={{
-        backgroundImage: `
-          linear-gradient(to right, #e0e0e0 1px, transparent 1px),
-          linear-gradient(to bottom, #e0e0e0 1px, transparent 1px)
-        `,
-        backgroundSize: '20px 20px',
-        backgroundAttachment: 'local',
-        backgroundColor: 'rgb(243 244 246)',
-      }}
-    >
-      <div
-        className="absolute origin-top-left"
-        style={{
-          transform: `scale(${scale}) translate(${translateX}px, ${translateY}px)`,
-          width: '8000px',
-          height: '6000px',
-        }}
-      >
-        {artboards.map(ab => (
-          <div
-            key={ab.id}
-            className="absolute shadow-xl border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden"
-            style={{
-              width: ab.width,
-              height: ab.height,
-              left: ab.x,
-              top: ab.y,
-              backgroundColor: ab.color,
-            }}
-          >
-            <div className="absolute top-0 left-0 right-0 bg-gray-200 dark:bg-gray-700 p-1 text-xs text-gray-700 dark:text-gray-300 font-semibold rounded-t-lg">
-              {ab.name} ({ab.width}x{ab.height})
-            </div>
-            <div className="p-4 pt-8 text-gray-500 dark:text-gray-400">
-              <p>이것은 "{ab.name}" 아트보드입니다.</p>
-              <div className="mt-4 p-2 bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded text-center">
-                샘플 UI 요소 (버튼)
-              </div>
-            </div>
-          </div>
-        ))}
+    <>
+      <KonvaShapeComponent
+        key={element.id}
+        {...element}
+        draggable
+        onClick={onSelect}
+        onTap={onSelect}
+        onDragEnd={handleDragEnd}
+        onTransformEnd={handleTransformEnd}
+        ref={shapeRef}
+        fontSize={element.type === 'text' ? 20 : undefined}
+        width={element.width}
+        height={element.height}
+      />
+      {isSelected && (
+        <Transformer
+          ref={trRef}
+          boundBoxFunc={(oldBox, newBox) => {
+            if (newBox.width < 5 || newBox.height < 5) {
+              return oldBox;
+            }
+            return newBox;
+          }}
+        />
+      )}
+    </>
+  );
+};
+
+export default function Canvas() {
+  const { elements, updateElement, selectedElementId, setSelectedElementId } = useEditor();
+  const stageRef = useRef<any>(null);
+
+  const checkDeselect = (e: any) => {
+    // Ensure window and KonvaEventObject are defined
+    if (typeof window === 'undefined' || !e.target || !e.target.getStage) return;
+    const clickedOnEmpty = e.target === e.target.getStage();
+    if (clickedOnEmpty) {
+      setSelectedElementId(null);
+    }
+  };
+
+  // Crucial: Only render the Konva Stage when in a browser environment
+  if (typeof window === 'undefined') {
+    return (
+      <div className="flex-grow bg-gray-50 dark:bg-gray-900 flex justify-center items-center p-4">
+        <p className="text-gray-500 dark:text-gray-400">Loading Canvas...</p>
       </div>
+    );
+  }
+
+  return (
+    <div className="flex-grow bg-gray-50 dark:bg-gray-900 flex justify-center items-center overflow-auto p-4">
+      <Stage
+        width={window.innerWidth * 0.7}
+        height={window.innerHeight * 0.8}
+        onMouseDown={checkDeselect}
+        onTouchStart={checkDeselect}
+        ref={stageRef}
+        className="border border-gray-300 dark:border-gray-600 shadow-lg"
+        style={{ background: 'white' }}
+      >
+        <Layer>
+          {elements.map((element) => (
+            <ShapeRenderer
+              key={element.id}
+              element={element}
+              isSelected={element.id === selectedElementId}
+              onSelect={() => {
+                setSelectedElementId(element.id);
+              }}
+              onChange={(newAttrs) => {
+                updateElement(element.id, newAttrs);
+              }}
+            />
+          ))}
+        </Layer>
+      </Stage>
     </div>
   );
 }

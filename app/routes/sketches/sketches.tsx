@@ -1,29 +1,44 @@
-// app/routes/sketches.$userId.$projectId.edit.tsx
-import { data } from 'react-router';
-import type { LoaderFunctionArgs } from 'react-router';
-import EditorLayout from '@/components/sketches/editorLayout'; // 새로 만든 레이아웃 컴포넌트
+import { Tldraw, type TLComponents, useEditor, useValue} from 'tldraw';
+import 'tldraw/tldraw.css'
+import { ShapeList } from '@/components/sketches/ShapeList'
+import '../../../styles/layer.panel.css'
+import { useEffect, useState } from 'react';
+// import snapshot from './snapshot.json'
 
-// export async function loader({ params }: LoaderFunctionArgs) {
-//   const userId = params.userId;
-//   const projectId = params.projectId;
-
-//   // 실제로는 여기서 프로젝트 데이터, 페이지 데이터, 컴포넌트 데이터 등을 불러옵니다.
-//   // 이 데이터는 EditorLayout 내부의 Canvas 컴포넌트에 전달되어 렌더링됩니다.
-//   // 예: const projectData = await getProjectData(projectId, userId);
-//   // return json({ projectData });
-//   return data({}); // 현재는 더미 데이터
-// }
-
-export default function ProjectEditorPage() {
-  // const { projectData } = useLoaderData<typeof loader>(); // 로더에서 데이터 받기
-
-  return (
-    // <EditorLayout projectData={projectData} />
-    <EditorLayout /> // 일단 데이터 없이 레이아웃만 렌더링
-  );
+const componets: TLComponents = {
+  InFrontOfTheCanvas: () => {
+    const editor = useEditor()
+    const shapeIds = useValue(
+      'shapeIds',
+      () => editor.getSortedChildIdsForParent(editor.getCurrentPageId()),
+      [editor]
+    )
+    return (
+      <div className='layer-panel'>
+        <div className='layer-panel-title'>모양</div>
+        <ShapeList 
+          shapeIds={shapeIds}
+          depth={0}
+        />
+      </div>
+    )
+  }
 }
 
-// 사용자가 캔버스에서 변경한 내용을 저장하는 action
-// export async function action({ request, params }: ActionFunctionArgs) {
-//   // ... 저장 로직 (이전 답변 참조)
-// }
+export default function ProjectEditorPage() {
+  // const store = useSyncDemo({ roomId: 'myapp-abc123'})
+ 
+
+  return (
+    <div className='sketches-editor'>
+      <Tldraw 
+        // persistenceKey='layer-panel-examle'
+        components={componets}
+        getShapeVisibility={(s) =>
+          s.meta.force_show ? 'visible' : s.meta.hidden ? 'hidden' : 'inherit'
+        }
+        // snapshot={snapshot as any as TLEditorSnapshot}
+      />
+    </div>
+  );
+}
