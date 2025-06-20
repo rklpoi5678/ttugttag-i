@@ -1,13 +1,90 @@
 .layer-panel {
 	position: absolute;
 	left: 0;
-	top: 42px;
+	top: 0;
 	width: 200px;
-	height: calc(100% - 42px);
+	height: calc(100%);
 	background: white;
 	display: flex;
 	flex-direction: column;
 }
+.layer-panel-header {
+	padding: 10px 15px;
+	border-bottom: 1px solid #e2e8f0;
+	display: flex;
+	flex-direction: column;
+	gap:10px;
+}
+.layer-panel-tabs {
+    display: flex;
+    gap: 5px;
+    margin-top: 5px;
+}
+.tab-button {
+	padding: 6px 12px;
+	border: 1px solid #cbd5e0;
+	border-radius: 6px;
+	background-color: #f8fafc;
+	color: #4a5568;
+	cursor: pointer;
+	font-size: 0.9rem;
+	transition: all 0.2s ease-in-out;
+}
+.tab-button:hover {
+	background-color: #e2e8f0;
+}
+.tab-button.active {
+	background-color: #3b82f6;
+	color: white;
+	border-color: #3b82fb;
+	font-weight: bold;
+}
+.tab-content {
+	flex-grow: 1;
+	overflow-y: auto;
+	padding: 10px;
+}
+.wireframe-content {
+	padding: 5px 0
+}
+.no-wireframe-content {
+	text-align: center;
+	color: #718096;
+	font-size: 0.9rem;
+	padding: 20px 0;
+}
+
+.page-thumbnail-placeholder {
+    width: 120px; /* thumbnailWidth와 동일 */
+    height: 180px; /* thumbnailHeight와 동일 */
+    border: 1px solid #ddd;
+    background-color: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden; /* 이미지가 넘칠 경우 숨김 */
+    flex-shrink: 0; /* 컨테이너 크기 고정 */
+    margin-bottom: 8px; /* 썸네일과 이름 사이 간격 */
+}
+
+.page-thumbnail-img {
+    width: 100%; /* 부모 컨테이너에 꽉 채움 */
+    height: 100%; /* 부모 컨테이너에 꽉 채움 */
+    object-fit: contain; /* 이미지 비율 유지하면서 컨테이너에 맞춤 */
+    background-color: white; /* 썸네일 배경색 */
+}
+
+.page-box-loading {
+    /* 기존 로딩중 메시지 스타일 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    color: #a0a0a0;
+    font-size: 12px;
+}
+
 .shape-tree {
 	display: flex;
 	flex-direction: column;
@@ -32,11 +109,6 @@
 	background-color: #0000000b;
 }
 
-.layer-panel-title {
-	padding: 10px;
-	font-size: smaller;
-	font-weight: bolder;
-}
 
 .shape-name-input {
 	border: none;
