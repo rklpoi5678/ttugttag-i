@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Editor, type TLPage, type TLPageId, type TLRecord, useValue } from 'tldraw'; 
+import { Pencil, Trash2, Star, Plus} from 'lucide-react';
 
 interface WireframePagesPanelProps {
     editor: Editor;
@@ -207,16 +208,7 @@ const WireframePagesPanel: React.FC<WireframePagesPanelProps> = ({
         isTranslating, 
         isDrawing
     ]);
-
-
-    const handleAddPage = () => {
-      if (editor) {
-        const newPage = editor.createPage({ name: `새 페이지 ${allPages.length + 1}` });
-        editor.setCurrentPage(newPage.id as TLPageId);
-        // 기본 도형 없이 빈 페이지로 생성
-      }
-    }
-
+    
     const handleStartEditing = (page: TLPage) => {
         setEditingPageId(page.id);
         setEditingPageName(page.name || '');
@@ -273,6 +265,8 @@ const WireframePagesPanel: React.FC<WireframePagesPanelProps> = ({
         }
     };
 
+    /** 페이지가 하나 이상이면 삭제 버튼 표시(예외 사항 방지) */
+    const showDeleteButton = allPages.length > 1;
     return (
         <div className="wireframe-pages-list">
             {allPages.map((page: TLPage, index: number) => (
@@ -306,36 +300,37 @@ const WireframePagesPanel: React.FC<WireframePagesPanelProps> = ({
                             {index + 1}. {page.name || '(이름 없음)'}
                         </span>
                     )}
-                    {currentPageId === page.id && (
-                        <span className="active-page-star">★</span>
-                    )}
-                    <button
-                        className="page-action-button edit-button"
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            handleStartEditing(page);
-                        }}
-                        title="이름 수정"
-                    >
-                        ✏️
-                    </button>
-                    <button
-                        className="page-action-button delete-button"
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeletePage(page.id);
-                        }}
-                        title="페이지 삭제"
-                    >
-                        🗑️
-                    </button>
+                    <div className="page-action-buttons-group">
+                        <button
+                            className="page-action-button edit-button"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                handleStartEditing(page);
+                            }}
+                            title="이름 수정"
+                        >
+                            <Pencil size={16}/>
+                        </button>
+                        {showDeleteButton && 
+                        <button
+                            className="page-action-button delete-button"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeletePage(page.id);
+                            }}
+                            title="페이지 삭제"
+                        >
+                            <Trash2 size={16}/>
+                        </button>
+                        }
+                    </div>
                 </div>
             ))}
             <button
                 className="add-page-button"
                 onClick={onAddPage}
             >
-                + 페이지 추가
+                <Plus size={16}/> 페이지 추가
             </button>
         </div>
     );
