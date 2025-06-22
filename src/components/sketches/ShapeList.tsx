@@ -113,7 +113,7 @@ function ShapeItem({
 							ev.stopPropagation()
 						}}
 					>
-						{shape.meta.hidden ? <EyeClosed /> : <Eye />}
+						{shape.meta.hidden ? <EyeClosed size={16}/> : <Eye size={16}/>}
 					</button>
 				</div>
 			)}

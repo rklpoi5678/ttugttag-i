@@ -280,6 +280,7 @@ const WireframePagesPanel: React.FC<WireframePagesPanelProps> = ({
                     key={page.id}
                     className={`page-preview-item ${currentPageId === page.id ? 'active-page' : ''}`}
                     onClick={() => onPageSelect(page.id)}
+                    draggable={false}
                 >
                     <div className="page-thumbnail-placeholder">
                         {/* 썸네일은 pageThumbnails 상태에서 가져오도록 유지 */}
@@ -287,6 +288,7 @@ const WireframePagesPanel: React.FC<WireframePagesPanelProps> = ({
                             src={pageThumbnails[page.id] || blankCanvasSvgDataUrl}
                             alt={`Page ${index + 1} thumbnail`}
                             className="page-thumbnail-img"
+                            draggable={false}
                         />
                     </div>
                     {editingPageId === page.id ? (

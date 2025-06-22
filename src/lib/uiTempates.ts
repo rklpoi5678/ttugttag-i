@@ -1,14 +1,11 @@
 // src/utils/uiTemplates.ts
 
 import type {
-    TLShape, TLShapeId,
-    TLGeoShape, TLTextShape, TLGeoShapeProps, TLTextShapeProps,
+    TLShape, TLGeoShapeProps, TLTextShapeProps,
     // TLDefaultColorStyle, TLDefaultFillStyle, TLDefaultDashStyle, TLDefaultSizeStyle,
     // TLDefaultFontStyle, TLDefaultHorizontalAlignStyle, TLDefaultVerticalAlignStyle,
     // TLGeoShapeGeoStyle, TLRichText // 정확한 타입을 임포트하지 않아도 TS가 추론하게 할 수 있지만, 명시하면 더 좋습니다.
 } from 'tldraw';
-import { createShapeId } from 'tldraw';
-import type{ ICustomShape } from '@/lib/MyCustomShape/MyCustomShape';
 
 // UI 템플릿의 타입을 정의합니다.
 export type UiTemplate = {

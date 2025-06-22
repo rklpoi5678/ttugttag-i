@@ -1,140 +1,159 @@
-// src/components/sketches/RightElementsPanel.tsx
+import { useCallback, useMemo, useState } from 'react';
+import { useEditor } from 'tldraw';
+import { uiTemplates, type UiTemplate } from '@/lib/uiTempates'; 
 
-import React, { useState, useCallback, useEffect } from 'react';
-import { useEditor, createShapeId } from 'tldraw';
-
-// uiTemplates 임포트 경로 통일 (src/utils/uiTemplates.ts에 정의되어 있다고 가정)
-import { uiTemplates, type UiTemplate, mainCategories, getSubCategories } from '@/components/sketches/uiTempates'; 
-
-// ExportCanvasButton 임포트
 import ExportCanvasButton from './ExportCanvasButton';
 
-// CSS 파일 임포트
 import '../../../styles/right.elements.panel.css'; 
 
-const RightElementsPanel: React.FC = () => {
-    const [activeSubTab, setActiveSubTab] = useState<string>(mainCategories[0] || 'UI Controls');
-    const [searchTerm, setSearchTerm] = useState<string>('');
+/** 카테고리 배경색 정의 */
+const tabColors: Record<string, string> = {
+    'elements': 'var(--color-blue-100)', // 요소 (연한 파랑)
+    'icons': 'var(--color-yellow-100)', // 아이콘 (노랑)
+    'images': 'var(--color-green-100)', // 이미지 (초록)
+    'library': 'var(--color-purple-100)', // 보관함 (보라색)
+};
 
-    // UI 템플릿 드래그 시작 시 호출될 함수
-    const handleDragStart = useCallback((e: React.DragEvent, template: UiTemplate) => {
-        e.dataTransfer.setData('tldraw/template', JSON.stringify(template));
-        e.dataTransfer.effectAllowed = 'copy';
+const RightElementsPanel = () => {
+    const editor = useEditor();
+    const [searchText, setSearchText] = useState<string>(''); /** 검색어 */
+    const [activeTab, setActiveTab] = useState<keyof typeof tabColors>('elements'); /** 현재 탭 */
+    const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({}); /** 펼쳐진 카테고리 */
 
-        const dragImage = new Image();
-        dragImage.src = 'data:image/svg+xml;utf8,' + encodeURIComponent(
-            `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40">` +
-            `<rect x="0" y="0" width="40" height="40" rx="8" ry="8" fill="rgba(0,0,0,0.5)" stroke="white" stroke-width="1.5"/>` +
-            `<text x="20" y="28" font-family="Arial" font-size="24" text-anchor="middle" fill="white">${template.icon}</text>` +
-            `</svg>`
-        );
-        e.dataTransfer.setDragImage(dragImage, 20, 20);
-        // !!! 중요 디버깅 포인트 !!!
-        console.log('Drag Start: Setting dataTransfer with:', e.dataTransfer.types, e.dataTransfer.getData('tldraw/template'));
+    const handleTemplateClick = (template: UiTemplate) => {
+        if (!editor) return;
+
+        // templateId에 따라 활성화할 도구를 결정
+        let toolIdToActivate: string | null = null;
+        if (template.id === 'common-button') {
+            toolIdToActivate = 'my-button-tool'; // 위에서 정의한 도구 ID
+        }
+        // 다른 템플릿에 대한 도구 ID도 여기에 추가
+
+        if (toolIdToActivate) {
+            editor.setCurrentTool(toolIdToActivate); // 해당 도구 활성화
+            console.log(`Tool '${toolIdToActivate}' activated.`);
+        } else {
+            console.warn(`No tool found for template ID: ${template.id}`);
+        }
+    };
+
+    /** 카테고리 토글 */
+    const toggleCategory = useCallback((categoryName: string) => {
+        setExpandedCategories((prev) => ({
+            ...prev,
+            [categoryName]: !prev[categoryName],
+        }));
     }, []);
 
-    // 활성 서브 탭과 검색어에 따라 필터링된 템플릿 목록 계산
-    const filteredTemplates = uiTemplates.filter(template => {
-        const matchesCategory = template.category === activeSubTab || (template.subCategory && template.subCategory === activeSubTab);
-        const matchesSearch = template.name.toLowerCase().includes(searchTerm.toLowerCase());
-        
-        // 이제 activeMainPanelTab 조건 없이 직접 필터링
-        return matchesCategory && matchesSearch;
-    });
-
-    // activeSubTab이 유효하지 않은 경우 초기화 (이제 항상 'elements' 탭이므로, activeMainPanelTab 의존성 제거)
-    useEffect(() => {
-        if (!mainCategories.includes(activeSubTab)) {
-            const firstMainCategory = mainCategories[0];
-            if (firstMainCategory) {
-                setActiveSubTab(firstMainCategory);
-            }
+    const filteredTemplates = useMemo(() => {
+        let templatesToFilter = uiTemplates
+        if(activeTab === 'elements'){
+            templatesToFilter = templatesToFilter.filter(t => t.category === 'UI Controls' || t.category === 'Chart')
+        } else if (activeTab === 'icons'){
+            templatesToFilter = templatesToFilter.filter(template => template.category === 'icons')
+        } else if (activeTab === 'images'){
+            templatesToFilter = templatesToFilter.filter(template => template.category === 'images')
+        } else if (activeTab === 'library'){
+            templatesToFilter = templatesToFilter.filter(template => template.category === 'library')
         }
-    }, [activeSubTab]); // activeMainPanelTab 의존성 제거
+
+        /** 검색어에 따른 필터링 */
+        if (searchText) {
+            const lowerCaseSearchText = searchText.toLowerCase()
+            templatesToFilter = templatesToFilter.filter(template => 
+                template.name.toLowerCase().includes(lowerCaseSearchText) ||
+                template.category.toLowerCase().includes(lowerCaseSearchText) ||
+                template.subCategory?.toLowerCase().includes(lowerCaseSearchText)
+            )
+        }
+
+        /** 그룹화 */
+        const grouped: Record<string, UiTemplate[]> = {};
+        templatesToFilter.forEach(template => {
+            const categoryName = template.category || '기타';
+            if (!grouped[categoryName]) {
+                grouped[categoryName] = [];
+            }
+            grouped[categoryName].push(template);
+        }) 
+        return grouped;
+
+    }, [searchText, activeTab, uiTemplates])
+    const currentTabColor = tabColors[activeTab];
 
     return (
         <div className='tldraw-right-elements-panel'>
-            
-            {/* ExportCanvasButton은 여기서 직접 렌더링 */}
-            {/* 클래스 추가하여 간격 조정 (CSS에서 정의) */}
-            <ExportCanvasButton />
-
-            {/* 메인 패널 탭 (이제 '요소' 탭만 남음) */}
-            <div className="main-panel-tabs-container">
-                <button 
-                    className="main-panel-tab active" // 항상 활성 상태
-                    // onClick 핸들러 제거 (탭 전환 로직 불필요)
-                >
-                    요소 (Elements)
-                </button>
-                {/* 미디어, 이미지, 보관함 탭은 제거됨 */}
-            </div>
-            
-            {/* 검색창 */}
-            <div className="template-search-bar">
-                <input
-                    type="text"
-                    placeholder="검색"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className='search-input'
-                />
-                <span className="search-icon">🔍</span>
+            {/* 최상단 ExportCanvasButton */}
+            <div className="panel-section export-button-section">
+                <ExportCanvasButton />
             </div>
 
-            {/* --- '요소' 탭 콘텐츠만 항상 렌더링 --- */}
-            <>
-                {/* 메인 카테고리 탭 (UI Controls, Icons, Images, Templates) */}
-                <div className="template-main-category-tabs">
-                    {mainCategories.map(cat => (
-                        <button
-                            key={cat}
-                            className={`category-tab-button ${activeSubTab === cat ? 'active' : ''}`}
-                            onClick={() => setActiveSubTab(cat)}
+            {/* 검색 기능 */}
+            <div className="panel-section search-section" style={{ backgroundColor: currentTabColor }}>
+                <div className="search-input-wrapper">
+                    <input
+                        type="text"
+                        placeholder="검색"
+                        value={searchText}
+                        onChange={(e) => setSearchText(e.target.value)}
+                        className="search-input"
+                    />
+                    <span className="search-icon">🔍</span>
+                </div>
+            </div>
+
+            {/* 탭 바 */}
+            <div className="panel-section tab-bar-section" style={{ backgroundColor: currentTabColor }}>
+                {Object.keys(tabColors).map(tabKey => (
+                    <button
+                        key={tabKey}
+                        className={`tab-button ${activeTab === tabKey ? 'active' : ''}`}
+                        onClick={() => setActiveTab(tabKey as keyof typeof tabColors)}
+                    >
+                        {
+                            // 탭 이름 표시: 'elements' -> '요소', 'icons' -> '아이콘' 등 매핑
+                            tabKey === 'elements' ? '요소' :
+                            tabKey === 'icons' ? '아이콘' :
+                            tabKey === 'images' ? '이미지' :
+                            tabKey === 'library' ? '보관함' : tabKey
+                        }
+                    </button>
+                ))}
+            </div>
+
+            {/* 드롭다운 섹션 (카테고리별 템플릿 목록) */}
+            <div className="panel-content-scrollable">
+                {Object.entries(filteredTemplates).map(([categoryName, templates]) => (
+                    <div key={categoryName} className="category-section">
+                        <div 
+                            className="category-header" 
+                            onClick={() => toggleCategory(categoryName)}
+                            style={{ backgroundColor: currentTabColor }} // 배경색 적용
                         >
-                            {cat}
-                        </button>
-                    ))}
-                </div>
-                
-                {/* 서브 카테고리 탭 (Common, Forms, iOS 등) */}
-                {activeSubTab === 'UI Controls' && getSubCategories('UI Controls').length > 0 && (
-                    <div className="template-sub-tabs-container-inner">
-                        <div className="template-sub-tabs">
-                            {getSubCategories('UI Controls').map(subCat => (
-                                <button
-                                    key={subCat}
-                                    className={`sub-tab-button ${activeSubTab === subCat ? 'active' : ''}`}
-                                    onClick={() => setActiveSubTab(subCat)}
-                                >
-                                    {subCat}
-                                </button>
-                            ))}
+                            <span className="category-toggle-icon">
+                                {expandedCategories[categoryName] ? '▼' : '▶'}
+                            </span>
+                            <h3>{categoryName}</h3>
                         </div>
-                    </div>
-                )}
-
-                {/* UI 템플릿 목록 */}
-                <div className="ui-templates-grid-container">
-                    {filteredTemplates.length > 0 ? (
-                        filteredTemplates.map((template) => (
-                            <div
-                                key={template.id}
-                                className="ui-template-item"
-                                draggable="true"
-                                onDragStart={(e) => handleDragStart(e, template)}
-                            >
-                                <span className="ui-template-icon">{template.icon}</span>
-                                <span className="ui-template-name">{template.name}</span>
+                        {expandedCategories[categoryName] && (
+                            <div className="templates-grid">
+                                {templates.map(template => (
+                                    <button
+                                        key={template.id}
+                                        className="template-button"
+                                        onClick={() => handleTemplateClick(template)}
+                                        draggable={false}
+                                    >
+                                        <div className="template-icon">{template.icon}</div>
+                                        <div className="template-name">{template.name}</div>
+                                    </button>
+                                ))}
                             </div>
-                        ))
-                    ) : (
-                        <p className="no-results">검색 결과가 없습니다.</p>
-                    )}
-                </div>
-            </>
-            {/* --- '요소' 탭 콘텐츠 렌더링 끝 --- */}
-
+                        )}
+                    </div>
+                ))}
+            </div>
         </div>
     );
 };

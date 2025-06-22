@@ -1,236 +1,189 @@
 /* src/styles/right.elements.panel.css */
 
 .tldraw-right-elements-panel {
+    width: 250px; /* 적절한 너비 설정 */
+    height: 100%;
+    background-color: var(--color-background); /* Tldraw 기본 배경색 사용 또는 원하는 색상 */
+    border-left: 1px solid var(--color-border); /* 구분선 */
     display: flex;
     flex-direction: column;
-    height: 100%;
-    width: 100%;
-    background-color: var(--color-panel); /* Tldraw 테마 색상 사용 */
-    border-left: 1px solid var(--color-grey-300);
-    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
-    padding: 12px; /* 전체 패널 패딩 */
-    box-sizing: border-box; /* 패딩이 너비/높이에 포함되도록 */
-    color: var(--color-text); /* 기본 텍스트 색상 */
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; /* 폰트 설정 */
-
-    position: relative;
+    overflow: hidden; /* 내부 스크롤 가능한 영역을 위해 */
+    box-shadow: -2px 0 5px rgba(0,0,0,0.1);
     z-index: 1000;
     pointer-events: all;
 }
 
-/* ExportCanvasButton에 적용할 마진 클래스 */
-.export-button-margin {
-    margin-bottom: 12px; /* 하단 마진 */
+.panel-section {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--color-border);
 }
 
-/* 메인 패널 탭 컨테이너 (이제 '요소' 탭만 있음) */
-.main-panel-tabs-container {
-    display: flex; /* Flexbox 유지 (나중에 탭 추가될 수 있으므로) */
-    justify-content: flex-start; /* 왼쪽 정렬 */
-    border-bottom: 1px solid var(--color-grey-300);
-    padding-bottom: 8px;
-    margin-bottom: 12px;
-}
-
-.main-panel-tab {
-    padding: 8px 12px; /* 탭 버튼 패딩 */
-    font-size: 0.875rem; /* 14px */
-    font-weight: 600;
+/* ExportCanvasButton 섹션 */
+.export-button-section {
+    padding: 12px;
+    background-color: var(--color-grey-300); /* Export 버튼 배경색 */
     text-align: center;
-    background: none;
-    border: none;
-    border-bottom: 2px solid transparent; /* 활성/비활성 상태에 따른 보더 */
-    color: var(--color-grey-700);
-    cursor: default; /* 클릭 불가처럼 보임 */
-    transition: all 0.2s ease-in-out;
-    white-space: nowrap;
 }
 
-.main-panel-tab.active {
-    color: var(--color-blue-500);
-    border-bottom-color: var(--color-blue-500);
+/* 검색 섹션 */
+.search-section {
+    padding: 8px 12px;
+    transition: background-color 0.3s ease; /* 배경색 전환 효과 */
 }
 
-/* 검색창 (이전과 동일) */
-.template-search-bar {
+.search-input-wrapper {
     position: relative;
-    width: 100%;
-    margin-bottom: 12px;
-}
-
-.template-search-bar .search-input {
-    width: calc(100% - 32px);
-    padding: 8px 12px 8px 32px;
-    font-size: 0.875rem;
-    background-color: var(--color-panel-contrast);
+    display: flex;
+    align-items: center;
     border: 1px solid var(--color-grey-400);
     border-radius: 4px;
-    color: var(--color-text);
+    background-color: var(--color-white);
+}
+
+.search-input {
+    flex-grow: 1;
+    border: none;
+    padding: 6px 8px 6px 30px; /* 아이콘 공간 확보 */
     outline: none;
-    box-sizing: border-box;
-}
-
-.template-search-bar .search-input::placeholder {
-    color: var(--color-grey-600);
-}
-
-.template-search-bar .search-input:focus {
-    border-color: var(--color-blue-500);
-    box-shadow: 0 0 0 1px var(--color-blue-500);
+    font-size: 14px;
+    background: transparent;
 }
 
 .search-icon {
     position: absolute;
     left: 8px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--color-grey-600);
-    font-size: 1rem;
+    color: var(--color-grey-500);
+    font-size: 16px;
 }
 
-/* 메인 카테고리 탭 (UI Controls, Icons 등) - 이전과 동일 */
-.template-main-category-tabs {
+/* 탭 바 섹션 */
+.tab-bar-section {
     display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 12px;
+    justify-content: space-around;
+    padding: 0; /* 탭 버튼이 패딩을 가짐 */
+    transition: background-color 0.3s ease; /* 배경색 전환 효과 */
 }
 
-.category-tab-button {
-    padding: 6px 12px;
-    font-size: 0.75rem;
-    font-weight: 500;
-    border-radius: 4px;
-    border: 1px solid var(--color-grey-300);
-    background-color: var(--color-grey-200);
-    color: var(--color-grey-700);
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-    white-space: nowrap;
-}
-
-.category-tab-button:hover {
-    background-color: var(--color-grey-300);
-    color: var(--color-text);
-}
-
-.category-tab-button.active {
-    background-color: var(--color-blue-500);
-    color: white;
-    border-color: var(--color-blue-500);
-    font-weight: 600;
-}
-
-/* 서브 카테고리 탭 컨테이너 (Common, Forms, iOS 등) - 이전과 동일 */
-.template-sub-tabs-container-inner {
-    margin-bottom: 16px;
-    border-bottom: 1px solid var(--color-grey-300);
-    padding-bottom: 8px;
-}
-
-.template-sub-tabs {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-
-.sub-tab-button {
-    padding: 4px 8px;
-    font-size: 0.7rem;
-    color: var(--color-grey-600);
-    background: none;
+.tab-button {
+    flex: 1;
+    padding: 10px 0;
     border: none;
+    border-right: 1px solid rgba(255,255,255,0.2); /* 탭 구분선 */
+    background-color: transparent;
+    color: var(--color-text-primary);
+    font-size: 13px;
     cursor: pointer;
-    transition: color 0.2s ease-in-out;
-    white-space: nowrap;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    text-align: center;
 }
 
-.sub-tab-button:hover {
-    color: var(--color-text);
+.tab-button:last-child {
+    border-right: none;
 }
 
-.sub-tab-button.active {
-    color: var(--color-blue-500);
+.tab-button.active {
+    background-color: rgba(0,0,0,0.1); /* 활성 탭 배경색 */
+    font-weight: bold;
+}
+
+.tab-button:hover:not(.active) {
+    background-color: rgba(0,0,0,0.05);
+}
+
+/* 카테고리 및 템플릿 목록 (스크롤 가능 영역) */
+.panel-content-scrollable {
+    flex-grow: 1; /* 남은 공간 모두 사용 */
+    overflow-y: auto; /* 세로 스크롤 가능 */
+    padding: 10px 0; /* 좌우 패딩은 카테고리 헤더와 템플릿 그리드에서 조절 */
+}
+
+.category-section {
+    margin-bottom: 10px;
+}
+
+.category-header {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    background-color: var(--color-grey-200); /* 카테고리 헤더 기본 배경색 */
+    border-bottom: 1px solid var(--color-border);
+    cursor: pointer;
+    transition: background-color 0.3s ease; /* 배경색 전환 효과 */
+}
+
+.category-header h3 {
+    margin: 0;
+    font-size: 14px;
     font-weight: 600;
+    color: var(--color-text-primary);
+    margin-left: 8px;
 }
 
-/* UI 템플릿 그리드 - 이전과 동일 */
-.ui-templates-grid-container {
-    flex-grow: 1;
-    overflow-y: auto;
+.category-toggle-icon {
+    font-size: 12px;
+    width: 16px;
+    text-align: center;
+    color: var(--color-grey-600);
+}
+
+.templates-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-    gap: 12px 8px;
-    padding: 0 4px;
-    background-color: var(--color-background);
+    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); /* 작은 버튼들을 유연하게 배치 */
+    gap: 8px; /* 버튼 사이 간격 */
+    padding: 12px; /* 그리드 내부 패딩 */
 }
 
-.ui-template-item {
+.template-button {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 4px;
+    width: 100%; /* 그리드 셀에 꽉 차게 */
     padding: 8px;
-    border: 1px solid transparent;
+    background-color: var(--color-white);
+    border: 1px solid var(--color-grey-300);
     border-radius: 4px;
-    background-color: transparent;
-    cursor: grab;
-    transition: all 0.2s ease-in-out;
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
     text-align: center;
+    font-size: 12px;
+    color: var(--color-text-primary);
+    white-space: nowrap; /* 텍스트 줄바꿈 방지 */
+    overflow: hidden; /* 넘치는 텍스트 숨김 */
+    text-overflow: ellipsis; /* ...으로 표시 */
 }
 
-.ui-template-item:hover {
+.template-button:hover {
     background-color: var(--color-grey-100);
-    border-color: var(--color-grey-300);
+    border-color: var(--color-blue-500);
 }
 
-.ui-template-icon {
-    font-size: 2.5rem;
-    line-height: 1;
-}
-
-.ui-template-name {
-    font-size: 0.75rem;
-    color: var(--color-text);
-    word-break: keep-all;
-    white-space: normal;
-}
-
-.no-results {
-    grid-column: 1 / -1;
-    padding: 20px;
-    text-align: center;
-    color: var(--color-grey-600);
-    font-size: 0.9rem;
-}
-
-/* 패널 하단 섹션 (검색, Media) - 이전과 동일 */
-.panel-footer-sections {
-    margin-top: auto;
-    padding-top: 16px;
-    border-top: 1px solid var(--color-grey-300);
-    background-color: var(--color-panel);
-    padding-left: 4px;
-    padding-right: 4px;
-}
-
-.panel-footer-section {
-    margin-bottom: 12px;
-}
-
-.panel-footer-section:last-child {
-    margin-bottom: 0;
-}
-
-.panel-footer-section h3 {
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--color-text);
+.template-icon {
+    font-size: 28px; /* 아이콘 크기 */
     margin-bottom: 4px;
 }
 
-.panel-footer-section p {
-    font-size: 0.75rem;
-    color: var(--color-grey-600);
+.template-name {
+    font-size: 12px;
+    line-height: 1.2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Tldraw 기본 색상 변수 (tldraw.css에서 가져오거나 직접 정의) */
+:root {
+    --color-background: #f8f9fa; /* 밝은 배경색 */
+    --color-border: #e0e0e0;
+    --color-text-primary: #333;
+    --color-grey-100: #f1f3f5;
+    --color-grey-200: #e9ecef;
+    --color-grey-300: #dee2e6;
+    --color-grey-400: #ced4da;
+    --color-grey-500: #adb5bd;
+    --color-white: #ffffff;
+    --color-blue-100: #e7f5ff; /* 연한 파랑 */
+    --color-yellow-100: #fff9db; /* 연한 노랑 */
+    --color-green-100: #e6ffed; /* 연한 초록 */
+    --color-purple-100: #f3e6ff; /* 연한 보라 */
+    --color-blue-500: #4263eb;
 }

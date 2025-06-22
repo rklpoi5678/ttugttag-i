@@ -1,19 +1,19 @@
 .layer-panel {
-	position: absolute;
-	left: 0;
-	top: 0;
-	width: 200px;
-	height: calc(100%);
-	background: white;
-	display: flex;
-	flex-direction: column;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 200px;
+    height: calc(100%);
+    background: white;
+    display: flex;
+    flex-direction: column;
 }
 .layer-panel-header {
-	padding: 10px 15px;
-	border-bottom: 1px solid #e2e8f0;
-	display: flex;
-	flex-direction: column;
-	gap:10px;
+    padding: 10px 15px;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    gap:10px;
 }
 .layer-panel-tabs {
     display: flex;
@@ -21,61 +21,66 @@
     margin-top: 5px;
 }
 .tab-button {
-	padding: 6px 12px;
-	border: 1px solid #cbd5e0;
-	border-radius: 6px;
-	background-color: #f8fafc;
-	color: #4a5568;
-	cursor: pointer;
-	font-size: 0.9rem;
-	transition: all 0.2s ease-in-out;
+    padding: 6px 12px;
+    border: 1px solid #cbd5e0;
+    border-radius: 6px;
+    background-color: #f8fafc;
+    color: #4a5568;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s ease-in-out;
 }
 .tab-button:hover {
-	background-color: #e2e8f0;
+    background-color: #e2e8f0;
 }
-.tab-button.active {
-	background-color: #3b82f6;
-	color: white;
-	border-color: #3b82fb;
-	font-weight: bold;
-}
+/* .tab-button.active {  <-- 이 부분 삭제
+    background-color: #3b82f6;
+    color: white;
+    border-color: #3b82fb;
+    font-weight: bold;
+} */
 .tab-content {
-	flex-grow: 1;
-	overflow-y: auto;
-	padding: 10px;
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 10px;
 }
 .wireframe-content {
-	padding: 5px 0
+    padding: 5px 0
 }
 .no-wireframe-content {
-	text-align: center;
-	color: #718096;
-	font-size: 0.9rem;
-	padding: 20px 0;
+    text-align: center;
+    color: #718096;
+    font-size: 0.9rem;
+    padding: 20px 0;
 }
 
+/* --- 와이어프레임 썸네일 관련 수정 --- */
 .page-thumbnail-placeholder {
-    width: 120px; /* thumbnailWidth와 동일 */
-    height: 180px; /* thumbnailHeight와 동일 */
+    /* 기존 너비 120px 유지 (가로 꽉 찬 수준에서 살짝 여유를 주려면 200px 패널 기준 180px 정도가 적당) */
+    width: 180px; /* 패널 너비 200px에서 좌우 여백을 고려하여 180px로 조정 */
+    /* 세로 크기를 살짝 줄임 */
+    height: 120px; /* 기존 180px에서 줄임 */
     border: 1px solid #ddd;
     background-color: #f0f0f0;
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden; /* 이미지가 넘칠 경우 숨김 */
-    flex-shrink: 0; /* 컨테이너 크기 고정 */
-    margin-bottom: 8px; /* 썸네일과 이름 사이 간격 */
+    overflow: hidden;
+    flex-shrink: 0;
+    margin-bottom: 8px;
+    /* 가로 기준 중앙 정렬을 위해 margin-left/right auto 추가 */
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .page-thumbnail-img {
-    width: 100%; /* 부모 컨테이너에 꽉 채움 */
-    height: 100%; /* 부모 컨테이너에 꽉 채움 */
-    object-fit: contain; /* 이미지 비율 유지하면서 컨테이너에 맞춤 */
-    background-color: white; /* 썸네일 배경색 */
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background-color: white;
 }
 
 .page-box-loading {
-    /* 기존 로딩중 메시지 스타일 */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -86,40 +91,44 @@
 }
 
 .shape-tree {
-	display: flex;
-	flex-direction: column;
+    display: flex;
+    flex-direction: column;
 }
 .shape-item {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	padding: 6px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 10px;
 }
 
 .shape-visibility-toggle {
-	padding: 3px 6px;
-	border-radius: 3px;
-	outline: none;
-	border: none;
-	background: none;
-	flex-shrink: 0;
+    padding: 3px 3px;
+    border-radius: 3px;
+    outline: none;
+    border: none;
+    background: none;
+    flex-shrink: 0;
+
+	font-size: 10px;
+	color: #555
 }
+
 .shape-visibility-toggle:hover {
-	cursor: pointer;
-	background-color: #0000000b;
+    cursor: pointer;
+    background-color: #0000000b;
 }
 
 
 .shape-name-input {
-	border: none;
-	background: none;
-	width: 0;
-	flex-grow: 1;
-	padding: 0;
+    border: none;
+    background: none;
+    width: 0;
+    flex-grow: 1;
+    padding: 0;
 }
 
 .shape-name {
-	overflow: hidden;
-	text-overflow: ellipsis;
-	text-wrap: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-wrap: nowrap;
 }
