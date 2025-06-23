@@ -2,6 +2,12 @@ import { drizzle, type DrizzleD1Database } from "drizzle-orm/d1";
 import { createRequestHandler } from "react-router";
 import * as schema from "../database/schema";
 
+export interface Env {
+  DB: D1Database;
+  CLERK_SECRET_KEY: string;
+  CLERK_PUBLISHABLE_KEY: string;
+}
+
 declare module "react-router" {
   export interface AppLoadContext {
     cloudflare: {

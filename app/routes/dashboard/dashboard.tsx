@@ -44,6 +44,7 @@ const sidebarItems = [
 export default function SellerLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const location = useLocation()
+  const [isNewProjectModalOpen, setIsNewProjectModalOpen] = useState(false)
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -95,7 +96,9 @@ export default function SellerLayout() {
         </div>
 
         {/* Main content */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto"><Outlet /></main>
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
+          <Outlet />
+        </main>
       </div>
     </div>
   )

@@ -1,7 +1,10 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "react-router-app",
-  "compatibility_date": "2025-04-04",
+  "compatibility_date": "2025-06-12",
+  "observability": {
+    "enabled": true
+  },
   "main": "./workers/app.ts",
   "vars": {
     "VALUE_FROM_CLOUDFLARE": "Hello from Cloudflare",
@@ -14,7 +17,7 @@
       "binding": "DB",
       "database_name": "ttugttag-i",
       "database_id": "411fb97e-f6a5-48bc-9d87-3613ebe601e2",
-      "migrations_dir": "drizzle"
+      "migrations_dir": "drizzle/migrations"
     }
   ]
 }

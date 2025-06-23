@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
-import { Tldraw, useEditor, useValue, Editor, createShapeId} from 'tldraw';
+import { Tldraw, useEditor, useValue, Editor, createShapeId, useTools, useIsToolSelected, DefaultToolbar, TldrawUiMenuItem, DefaultToolbarContent, DefaultKeyboardShortcutsDialog, DefaultKeyboardShortcutsDialogContent, type TLUiOverrides, computed} from 'tldraw';
 import { type TLComponents, type TLPageId, type TLFrameShape, Box } from 'tldraw';
 
 import 'tldraw/tldraw.css'
@@ -13,7 +13,56 @@ import RightElementsPanel from '@/components/sketches/RightSidePanel';
 import { MyButtonTool } from '@/components/sketches/MyButtinTool';
 
 import { MyShapeUtil } from '@/lib/MyCustomShape/MyCustomShape';
+import { $currentSlide, getSlides, moveToSlide } from '@/lib/useSlides';
+import { SlideShapeUtil } from '@/lib/SlideShapeUtils';
+import { SlidesPanel } from '@/components/sketches/SlidesPanel';
+import { SlideShapeTool } from '@/components/sketches/SlideShapeTool';
+// import { data, useLoaderData, type LoaderFunctionArgs } from 'react-router';
+// import { getAuth } from '@clerk/react-router/ssr.server';
 // import snapshot from './snapshot.json'
+
+// export async function loader(args: LoaderFunctionArgs) {
+//   const { db } = args.context
+//   const { userId } = await getAuth(args)
+
+//   const projectId = args.params.projectId as string
+
+//   if (!userId) {
+//     throw data({ message: "인증되지 않았습니다. 로그인이 필요합니다." }, { status: 401 });
+//   }
+
+//   if (!projectId) {
+//     throw data({ message: "프로젝트 ID가 필요합니다." }, { status: 400 });
+//   }
+
+//   try {
+//     const project = await db.query.userProjects.findFirst({
+//       where: (project, { eq, and }) => and(eq(project.id, projectId), eq(project.clerkUserId, userId)),
+//     });
+
+//     if (!project) {
+//       throw data({ message: "프로젝트를 찾을 수 없거나 접근권한이 없습니다." }, { status: 404 });
+//     }
+//     /** Tldraw content는 JSON 문자열이므로 파싱하여 반환 */
+//     let tldrawContent: any
+//     try {
+//       tldrawContent = JSON.parse(project.tldrawContent)
+//     } catch (parseError) {
+//       console.error("tldrawContent 파싱 중 오류:", parseError)
+//       tldrawContent = { document: { elements: []}}
+//     }
+//     /** loader객체를 반환 이객체는 useLoaderData()를 통해 접근 가능 */
+//     return data({
+//       projectId: project.id,
+//       initialContent: tldrawContent,
+//       projectName: project.projectName
+//     });
+
+//   } catch (error) {
+//     console.error("프로젝트 로딩 중 오류:", error)
+//     throw data({ message: "프로젝트 로딩 중 오류가 발생했습니다." }, { status: 500 })
+//   }
+// }
 
 const CUSTOM_CANVAS_WIDTH = 1920; // 예시: 웹 디자인을 위한 1920px 너비
 const CUSTOM_CANVAS_HEIGHT = 1080; // 예시: 1080px 높이
@@ -25,6 +74,26 @@ const componets: TLComponents = {
   Minimap: null,
   StylePanel:RightElementsPanel,
   SharePanel: null,
+  HelperButtons: SlidesPanel,
+  Toolbar (props){
+    const tools = useTools()
+    const isSlideSelected = useIsToolSelected(tools['slide'])
+    return (
+      <DefaultToolbar {...props}>
+        <TldrawUiMenuItem {...tools['slide']} isSelected={isSlideSelected} />
+        <DefaultToolbarContent />
+      </DefaultToolbar>
+      )
+  },
+  KeyboardShortcutsDialog: (props) => {
+		const tools = useTools()
+		return (
+			<DefaultKeyboardShortcutsDialog {...props}>
+				<TldrawUiMenuItem {...tools['slide']} />
+				<DefaultKeyboardShortcutsDialogContent />
+			</DefaultKeyboardShortcutsDialog>
+		)
+	},
   //레이어 패널
   InFrontOfTheCanvas: () => {
     const editor = useEditor()
@@ -106,6 +175,55 @@ const componets: TLComponents = {
   }
 }
 
+const overrides: TLUiOverrides = {
+	actions(editor, actions) {
+		const $slides = computed('slides', () => getSlides(editor))
+		return {
+			...actions,
+			'next-slide': {
+				id: 'next-slide',
+				label: 'Next slide',
+				kbd: 'right',
+				onSelect() {
+					const slides = $slides.get()
+					const currentSlide = $currentSlide.get()
+					const index = slides.findIndex((s) => s.id === currentSlide?.id)
+					const nextSlide = slides[index + 1] ?? currentSlide ?? slides[0]
+					if (nextSlide) {
+						editor.stopCameraAnimation()
+						moveToSlide(editor, nextSlide)
+					}
+				},
+			},
+			'previous-slide': {
+				id: 'previous-slide',
+				label: 'Previous slide',
+				kbd: 'left',
+				onSelect() {
+					const slides = $slides.get()
+					const currentSlide = $currentSlide.get()
+					const index = slides.findIndex((s) => s.id === currentSlide?.id)
+					const previousSlide = slides[index - 1] ?? currentSlide ?? slides[slides.length - 1]
+					if (previousSlide) {
+						editor.stopCameraAnimation()
+						moveToSlide(editor, previousSlide)
+					}
+				},
+			},
+		}
+	},
+	tools(editor, tools) {
+		tools.slide = {
+			id: 'slide',
+			icon: 'group',
+			label: 'Slide',
+			kbd: 's',
+			onSelect: () => editor.setCurrentTool('slide'),
+		}
+		return tools
+	},
+}
+
 const customTools = [MyButtonTool]
 const customShapeUtil = [MyShapeUtil]
 
@@ -113,6 +231,11 @@ export default function ProjectEditorPage() {
   const assetUrls = getAssetUrlsByMetaUrl();
   const editorRef = useRef<Editor | null>(null);
   const tldrawContainerRef = useRef<HTMLDivElement>(null); // Tldraw를 감싸는 div 참조
+
+  // const { projectId, initialTldrawContent } = useLoaderData() as {
+  //   projectId: string;
+  //   initialTldrawContent: any; //tldraw 문서타입
+  // }
 
   const handleTldrawMount = useCallback((e: Editor) => {
     editorRef.current = e;
@@ -166,14 +289,16 @@ export default function ProjectEditorPage() {
   }, [CUSTOM_CANVAS_WIDTH, CUSTOM_CANVAS_HEIGHT, INITIAL_VIEW_PADDING]); // useCallback 의존성 배열에 상수 추가
 
 
+  /** TODO 각 프로젝트마다 persistenceKey설정 초기값 .snapshot문서참고하여서 구현 */
   return (
     <div style={{ position: 'fixed', inset: 0, display:'flex', flexDirection:'column'}}>
       <NavBar />
       <Tldraw
-        persistenceKey='layer-panel-examle'
+        persistenceKey='main-canvas-area-frame'
         components={componets}
-        shapeUtils={customShapeUtil}
-        tools={customTools}
+        shapeUtils={[MyShapeUtil, SlideShapeUtil]}
+        tools={[SlideShapeTool, MyButtonTool]}
+        overrides={overrides}
         getShapeVisibility={(s) =>
           s.meta.force_show ? 'visible' : s.meta.hidden ? 'hidden' : 'inherit'
         }

@@ -16,20 +16,20 @@ export default defineConfig(config => {
 
   return {
     plugins: [
-    cloudflare({ viteEnvironment: { name: "ssr" } }),
-    tailwindcss(),
-    reactRouter(),
-    sentryVitePlugin({
-      org: "meta-os",
-      project: "ttugttag-i",
-      authToken: SENTRY_AUTH_TOKEN,
-      sourcemaps: {
-        assets: './build/client/**' // 클라이언트 빌드 결과물의 경로를 정확히 표시
-      },
-      telemetry: false,
-    }),
-    tsconfigPaths(),
-    nodePolyfills(),
+      cloudflare({ viteEnvironment: { name: "ssr" } }),
+      tailwindcss(),
+      reactRouter(),
+      sentryVitePlugin({
+        org: "meta-os",
+        project: "ttugttag-i",
+        authToken: SENTRY_AUTH_TOKEN,
+        sourcemaps: {
+          assets: './build/client/**' // 클라이언트 빌드 결과물의 경로를 정확히 표시
+        },
+        telemetry: false,
+      }),
+      tsconfigPaths(),
+      nodePolyfills(),
   ],
   define: {
     'process.env.NODE_ENV': JSON.stringify(config.mode),

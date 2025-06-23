@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "fb0c8421-cccb-4f1c-9c40-cff64521033f",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "98c2f560-1121-456b-9990-49739c1dc7e3",
+  "prevId": "fb0c8421-cccb-4f1c-9c40-cff64521033f",
   "tables": {
     "UserProjects": {
       "name": "UserProjects",
@@ -83,8 +83,9 @@
           "name": "imageUrl",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
+          "notNull": true,
+          "autoincrement": false,
+          "default": "''"
         }
       },
       "indexes": {},

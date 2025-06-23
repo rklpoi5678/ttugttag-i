@@ -4,7 +4,17 @@
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif,
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
-
+@layer utilities {
+  .bg-black {
+    /*
+     * Tailwind CSS의 `--tw-bg-opacity` 변수를 사용하도록 수정합니다.
+     * 만약 `--color-black`이 `rgb` 형식이라면 `rgba`로 변환할 수 있도록 합니다.
+     * `--color-black`이 `#000`과 같은 헥스 값이라면, `rgba`로 변환하는 함수가 필요할 수 있습니다.
+     * 가장 간단한 방법은 `--color-black` 변수 자체를 rgba 형태로 정의하는 것입니다.
+     */
+    background-color: rgba(var(--color-black), var(--tw-bg-opacity));
+  }
+}
 html,
 body {
   @apply bg-white dark:bg-gray-950;

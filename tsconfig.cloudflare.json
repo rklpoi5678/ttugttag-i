@@ -10,7 +10,7 @@
     "worker-configuration.d.ts",
     "src/components",
     "src/lib",
-    "src/hooks",
+    "src/hooks", "database",
   ],
   "exclude": [
     "node_modules",
