@@ -4,10 +4,11 @@ CREATE TABLE `UserProjects` (
 	`projectName` text NOT NULL,
 	`projectDescription` text,
 	`tldrawContent` text NOT NULL,
-	`createdAt` text DEFAULT CURRENT_TIMESTAMP,
-	`updatedAt` text DEFAULT CURRENT_TIMESTAMP,
 	`screenSize` text,
+	`canvas_width` integer,
+	`canvas_height` integer,
 	`projectType` text,
 	`tags` text,
-	`imageUrl` text
+	`createdAt` text DEFAULT CURRENT_TIMESTAMP,
+	`updatedAt` text DEFAULT CURRENT_TIMESTAMP
 );

@@ -1,32 +1,51 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Form, useActionData, useNavigate, useNavigation } from 'react-router';
 import { X } from 'lucide-react'; // 닫기 버튼 아이콘
-import { useAuth, useUser } from '@clerk/react-router';
-
+import { useUser } from '@clerk/react-router';
+/** 새 목업 만들기 모달에 props 정의 */
 interface NewProjectModalProps {
   onProjectCreated: () => void
 }
 
-
+/**
+ * 새로운 프로젝트를 생성하는 모달 컴포넌트
+ * @param {NewProjectModalProps} props - 프로젝트 생성 완료 후 호출될 콜백 함수를 포함
+ */
 function NewProjectModal({ onProjectCreated }: NewProjectModalProps) {
+  /** React Router 훅 사용 */
   const navigate = useNavigate();
   const actionData = useActionData() as {message?:string; error?:string} | undefined; // action 반환값
   const navigation = useNavigation();
 
-  const { user, isLoaded, isSignedIn } = useUser();
+  /** Clerk 훅 사용 - 사용자 정보 가져오기 */
+  const { user, isSignedIn } = useUser();
 
+  /** 프로젝트 관련 상태 관리 */
   const [projectName, setProjectName] = useState('');
   const [projectDescription, setProjectDescription] = useState('');
   const [selectedScreenSize, setSelectedScreenSize] = useState('mobile_portrait'); // 기본 선택값
+
+  /** 커스텀 사이즈 관련 상태 및 유효성 검사 */
   const [customWidth, setCustomWidth] = useState('');
   const [customHeight, setCustomHeight] = useState('');
+  const [customSizeError, setCustomSizeError] = useState(''); // 커스텀 사이즈 에러 메시지 상태
+  
+  /** 프로젝트 타입 관련 상태 관리 */
   const [projectType, setProjectType] = useState('whiteboard'); // 기본 선택값
 
   /** 제출 상태 확인 */
   const isSubmitting = navigation.state === 'submitting';
 
+  /** 커스텀 사이즈 입력 범위 정의 */
+  const MIN_CUSTOM_SIZE = 100;
+  const MAX_CUSTOM_SIZE = 4000;
+
+  /** 
+   * 모달 닫기 핸들러
+   * 이전 경로로 돌아가 모달을 닫는다.
+   */
   const handleClose = () => {
-    navigate(-1); // 이전 경로로 돌아가기 (모달 닫기)
+    navigate(-1);
   };
 
   /** actionData를 사용하여 에러나 성공 메시지 처리 */
@@ -45,6 +64,26 @@ function NewProjectModal({ onProjectCreated }: NewProjectModalProps) {
     }
   }, [actionData, navigation.state, onProjectCreated])
 
+  /** 커스텀 사이즈 입력 유효성 검사 */
+  useEffect(() => {
+    if (selectedScreenSize === 'custom') {
+      const width = parseInt(customWidth, 10);
+      const height = parseInt(customHeight, 10);
+
+      if (
+        (customWidth && (isNaN(width) || width < MIN_CUSTOM_SIZE || width > MAX_CUSTOM_SIZE)) ||
+        (customHeight && (isNaN(height) || height < MIN_CUSTOM_SIZE || height > MAX_CUSTOM_SIZE))
+      ) {
+        setCustomSizeError(`너비와 높이는 ${MIN_CUSTOM_SIZE}px에서 ${MAX_CUSTOM_SIZE}px 사이여야 합니다.`);
+      } else {
+        setCustomSizeError('');
+      }
+    } else {
+      setCustomSizeError('');
+    }
+  }, [selectedScreenSize, customWidth, customHeight]);
+
+  /** 미리 정의된 화면 화면 사이즈 옵션 */
   const screenSizes = [
     { id: 'mobile_portrait', name: 'Mobile 세로모드', size: '360 px', description: '360 px' },
     { id: 'mobile_landscape', name: 'Mobile 가로모드', size: '640 px', description: '640 px' },
@@ -54,8 +93,16 @@ function NewProjectModal({ onProjectCreated }: NewProjectModalProps) {
     { id: 'pc_1200', name: 'PC', size: '1200 px', description: '1200 px' },
   ];
 
+  /** 폼 제출 버튼 활성화 조건 */
+  const isFormValid = 
+    projectName.trim() !== '' &&
+    isSignedIn &&
+    user &&
+    (!customSizeError) && // 커스텀 사이즈 에러가 없어야 한다는 조건
+    (selectedScreenSize !== 'custom' || (customWidth.trim() !== '' && customHeight.trim() !== '')); // 커스텀 선택 시 값이 필수
+
   return (
-    // 모달 오버레이
+    /** 모달 오버레이 */
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm p-4">
       {/* 모달 내용 컨테이너 */}
       <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl mx-auto flex flex-col max-h-[90vh] overflow-hidden">
@@ -72,11 +119,7 @@ function NewProjectModal({ onProjectCreated }: NewProjectModalProps) {
 
         {/* 모달 바디 (폼 내용) */}
         <Form method="post" className="p-6 space-y-6 overflow-y-auto flex-grow">
-          {/** 클럭 유저아이디는 히든으로 전송 */}
-          {isSignedIn && user && (
-            <input type="hidden" name="userId" value={user?.id} />
-          )}
-          {/* 프로젝트 이름 */}
+          {/* 프로젝트 이름 입력 섹션 */}
           <div>
             <label htmlFor="projectName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               프로젝트 이름 <span className="text-red-500">*</span>
@@ -93,7 +136,7 @@ function NewProjectModal({ onProjectCreated }: NewProjectModalProps) {
             />
           </div>
 
-          {/* 상세 내용 */}
+          {/* 프로젝트 상세 내용 입력 섹션 */}
           <div>
             <label htmlFor="projectDescription" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               상세내용
@@ -108,7 +151,7 @@ function NewProjectModal({ onProjectCreated }: NewProjectModalProps) {
             ></textarea>
           </div>
 
-          {/* 기본 화면 사이즈 */}
+          {/* 기본 화면 사이즈 선택 섹션 */}
           <div>
             <p className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">기본 화면 사이즈</p>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -137,7 +180,7 @@ function NewProjectModal({ onProjectCreated }: NewProjectModalProps) {
                   </div>
                 </label>
               ))}
-              {/* 커스텀 사이즈 */}
+              {/* 커스텀 사이즈 입력 섹션 */}
               <label
                 className={`flex flex-col items-center p-3 border rounded-lg cursor-pointer transition-all duration-200
                   ${selectedScreenSize === 'custom'
@@ -165,6 +208,8 @@ function NewProjectModal({ onProjectCreated }: NewProjectModalProps) {
                       value={customWidth}
                       onChange={(e) => setCustomWidth(e.target.value)}
                       onClick={(e) => e.stopPropagation()} // 라디오 버튼 선택 막기
+                      min={MIN_CUSTOM_SIZE} // 최소값 설정
+                      max={MAX_CUSTOM_SIZE} // 최대값 설정
                     />
                     <span className="text-gray-600 dark:text-gray-400">x</span>
                     <input
@@ -175,11 +220,17 @@ function NewProjectModal({ onProjectCreated }: NewProjectModalProps) {
                       value={customHeight}
                       onChange={(e) => setCustomHeight(e.target.value)}
                       onClick={(e) => e.stopPropagation()} // 라디오 버튼 선택 막기
+                      min={MIN_CUSTOM_SIZE} // 최소값 설정
+                      max={MAX_CUSTOM_SIZE} // 최대값 설정
                     />
                   </div>
                 )}
               </label>
             </div>
+            {/* 커스텀 사이즈 유효성 검사 에러 메시지 */}
+            {customSizeError && (
+              <p className="text-xs text-red-500 dark:text-red-400 mt-1">{customSizeError}</p>
+            )}
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-3">
               신규 페이지 생성 시 적용되는 화면비율이며, 프로젝트 생성 후 페이지별 변경 가능합니다.
             </p>
@@ -226,21 +277,28 @@ function NewProjectModal({ onProjectCreated }: NewProjectModalProps) {
             </div>
           </div>
 
-          {/** cleakUserId hidden input으로 전송 */}
+          {/** 클럭 유저아이디는 히든으로 전송 */}
+          {isSignedIn && user && <input type="hidden" name="userId" value={user?.id} />}
           <input type="hidden" name="clerkUserId" value={user?.id} />
-          {/** TldrawContent는 hidden input으로 전송(초기값) */}
+          {/** 초기 TldrawContent  (hidden input) */}
           <input type="hidden" name="tldrawContent" value={JSON.stringify({document:[]})} />
-          {/** tags값도 hidden input으로 전송(초기값) */}
+          {/** 초기 태그 값 (hidden input) */}
           <input type="hidden" name="tags" value={'새 프로젝트'} />
 
-          {/* 테스트 URL 공유 섹션 (이미지 참조) - 이 부분은 단순 텍스트로 대체 */}
+          {/* 테스트 URL 공유 섹션 (UI/UX 예시) */}
           <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
             <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">테스트URL 공유</p>
             <div className="flex gap-2 mb-2">
-              <button className="px-4 py-2 bg-blue-100 text-blue-800 text-sm rounded-md hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-200 dark:hover:bg-blue-800">
+              <button
+                type="button" // 폼 제출 방지
+                className="px-4 py-2 bg-blue-100 text-blue-800 text-sm rounded-md hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-200 dark:hover:bg-blue-800"
+              >
                 로그인없이 보기 허용
               </button>
-              <button className="px-4 py-2 bg-gray-200 text-gray-800 text-sm rounded-md hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500">
+              <button
+                type="button" // 폼 제출 방지
+                className="px-4 py-2 bg-gray-200 text-gray-800 text-sm rounded-md hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500"
+              >
                 특정 사용자에게만 허용
               </button>
             </div>
@@ -249,19 +307,19 @@ function NewProjectModal({ onProjectCreated }: NewProjectModalProps) {
             </p>
           </div>
 
-        {/* 모달 푸터 */}
-        <div className="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end">
-          <button
-            type="submit"
-            formMethod='post'
-            formAction='/dashboard/projects'
-            disabled={isSubmitting || !isSignedIn || !user || !projectName.trim()} //로딩 상태 및 유효성 검사로 비활
-            className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-lg shadow-md transition-colors duration-300"
-            >
-            {isSubmitting ? '로딩중...' : '새로운 프로젝트 만들기'}
-          </button>
-        </div>
-      </Form>
+          {/* 모달 푸터 */}
+          <div className="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end">
+            <button
+              type="submit"
+              formMethod='post'
+              formAction='/dashboard/projects'
+              disabled={isSubmitting || !isFormValid} //로딩 상태 및 유효성 검사로 비활
+              className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-lg shadow-md transition-colors duration-300"
+              >
+              {isSubmitting ? '로딩중...' : '새로운 프로젝트 만들기'}
+            </button>
+          </div>
+        </Form>
       </div>
     </div>
     );

@@ -21,6 +21,7 @@ export default [
         route("/dashboard/collaborators", "routes/dashboard/dashboard.collaborators.tsx"),
         route("/dashboard/checkout", "routes/dashboard/dashboard.checkout.tsx"),
         route("/dashboard/projects/new", "routes/modal/NewProjectModal.tsx"),
+        route("/dashboard/projects/delete", "routes/modal/DeleteConfirmationModal.tsx")
     ]),
-    route("/sketches/:pid", "routes/sketches/sketches.tsx"),
+    route("/sketches/:projectId", "routes/sketches/sketches.tsx"),
 ] satisfies RouteConfig;

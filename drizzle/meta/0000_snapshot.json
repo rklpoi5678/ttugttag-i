@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "fb0c8421-cccb-4f1c-9c40-cff64521033f",
+  "id": "60e884b8-1e71-4327-95ca-85f536cecded",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "UserProjects": {
@@ -42,25 +42,23 @@
           "notNull": true,
           "autoincrement": false
         },
-        "createdAt": {
-          "name": "createdAt",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
-        },
-        "updatedAt": {
-          "name": "updatedAt",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
-        },
         "screenSize": {
           "name": "screenSize",
           "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "canvas_width": {
+          "name": "canvas_width",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "canvas_height": {
+          "name": "canvas_height",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -79,12 +77,21 @@
           "notNull": false,
           "autoincrement": false
         },
-        "imageUrl": {
-          "name": "imageUrl",
+        "createdAt": {
+          "name": "createdAt",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
-          "autoincrement": false
+          "autoincrement": false,
+          "default": "CURRENT_TIMESTAMP"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "CURRENT_TIMESTAMP"
         }
       },
       "indexes": {},

@@ -17,7 +17,7 @@
       "binding": "DB",
       "database_name": "ttugttag-i",
       "database_id": "411fb97e-f6a5-48bc-9d87-3613ebe601e2",
-      "migrations_dir": "drizzle/migrations"
+      "migrations_dir": "./drizzle"
     }
   ]
 }

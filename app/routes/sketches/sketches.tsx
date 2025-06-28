@@ -1,312 +1,100 @@
 import { useCallback, useRef, useState } from 'react';
-import { Tldraw, useEditor, useValue, Editor, createShapeId, useTools, useIsToolSelected, DefaultToolbar, TldrawUiMenuItem, DefaultToolbarContent, DefaultKeyboardShortcutsDialog, DefaultKeyboardShortcutsDialogContent, type TLUiOverrides, computed} from 'tldraw';
-import { type TLComponents, type TLPageId, type TLFrameShape, Box } from 'tldraw';
+import { useFetcher, useLoaderData } from 'react-router';
+import { Tldraw, getSnapshot, type Editor, type StoreSnapshot, type TLRecord, type TLUiOverrides } from 'tldraw';
+import { getAssetUrlsByMetaUrl } from '@tldraw/assets/urls';
+import 'tldraw/tldraw.css';
 
-import 'tldraw/tldraw.css'
-import { getAssetUrlsByMetaUrl } from '@tldraw/assets/urls'
+// 분리된 서버 로직 import
+export { loader, action } from '../../../src/server/project.server';
 
-import '../../../styles/layer.panel.css'
-import NavBar from '@/components/sketches/NavBar';
-import { ShapeList } from '@/components/sketches/ShapeList'
-import WireframePagesPanel from '@/components/sketches/WireframePagesPanel';
-import RightElementsPanel from '@/components/sketches/RightSidePanel';
+// 분리된 tldraw 설정 import
+import { customComponents } from '@/lib/tldraw/tldraw.components';
+import { customActions } from '@/lib/tldraw/tldraw.actions';
+import { customTools } from '@/lib/tldraw/tldraw.tools';
+import { handleEditorMount } from '@/lib/tldraw/tldraw.handlers';
+
+// 유틸 및 커스텀 Shapes/Tools import
+import EditorNavBar from '@/components/sketches/EditorNavBar';
 import { MyButtonTool } from '@/components/sketches/MyButtinTool';
-
 import { MyShapeUtil } from '@/lib/MyCustomShape/MyCustomShape';
-import { $currentSlide, getSlides, moveToSlide } from '@/lib/useSlides';
 import { SlideShapeUtil } from '@/lib/SlideShapeUtils';
-import { SlidesPanel } from '@/components/sketches/SlidesPanel';
 import { SlideShapeTool } from '@/components/sketches/SlideShapeTool';
-// import { data, useLoaderData, type LoaderFunctionArgs } from 'react-router';
-// import { getAuth } from '@clerk/react-router/ssr.server';
-// import snapshot from './snapshot.json'
 
-// export async function loader(args: LoaderFunctionArgs) {
-//   const { db } = args.context
-//   const { userId } = await getAuth(args)
-
-//   const projectId = args.params.projectId as string
-
-//   if (!userId) {
-//     throw data({ message: "인증되지 않았습니다. 로그인이 필요합니다." }, { status: 401 });
-//   }
-
-//   if (!projectId) {
-//     throw data({ message: "프로젝트 ID가 필요합니다." }, { status: 400 });
-//   }
-
-//   try {
-//     const project = await db.query.userProjects.findFirst({
-//       where: (project, { eq, and }) => and(eq(project.id, projectId), eq(project.clerkUserId, userId)),
-//     });
-
-//     if (!project) {
-//       throw data({ message: "프로젝트를 찾을 수 없거나 접근권한이 없습니다." }, { status: 404 });
-//     }
-//     /** Tldraw content는 JSON 문자열이므로 파싱하여 반환 */
-//     let tldrawContent: any
-//     try {
-//       tldrawContent = JSON.parse(project.tldrawContent)
-//     } catch (parseError) {
-//       console.error("tldrawContent 파싱 중 오류:", parseError)
-//       tldrawContent = { document: { elements: []}}
-//     }
-//     /** loader객체를 반환 이객체는 useLoaderData()를 통해 접근 가능 */
-//     return data({
-//       projectId: project.id,
-//       initialContent: tldrawContent,
-//       projectName: project.projectName
-//     });
-
-//   } catch (error) {
-//     console.error("프로젝트 로딩 중 오류:", error)
-//     throw data({ message: "프로젝트 로딩 중 오류가 발생했습니다." }, { status: 500 })
-//   }
-// }
-
-const CUSTOM_CANVAS_WIDTH = 1920; // 예시: 웹 디자인을 위한 1920px 너비
-const CUSTOM_CANVAS_HEIGHT = 1080; // 예시: 1080px 높이
-const INITIAL_VIEW_PADDING = 100; // 초기 줌 시 캔버스 내용 주위의 여백
-
-const componets: TLComponents = {
-  QuickActions:null,
-  MenuPanel:null,
-  Minimap: null,
-  StylePanel:RightElementsPanel,
-  SharePanel: null,
-  HelperButtons: SlidesPanel,
-  Toolbar (props){
-    const tools = useTools()
-    const isSlideSelected = useIsToolSelected(tools['slide'])
-    return (
-      <DefaultToolbar {...props}>
-        <TldrawUiMenuItem {...tools['slide']} isSelected={isSlideSelected} />
-        <DefaultToolbarContent />
-      </DefaultToolbar>
-      )
-  },
-  KeyboardShortcutsDialog: (props) => {
-		const tools = useTools()
-		return (
-			<DefaultKeyboardShortcutsDialog {...props}>
-				<TldrawUiMenuItem {...tools['slide']} />
-				<DefaultKeyboardShortcutsDialogContent />
-			</DefaultKeyboardShortcutsDialog>
-		)
-	},
-  //레이어 패널
-  InFrontOfTheCanvas: () => {
-    const editor = useEditor()
-    const [activeTab, setActiveTab] = useState<'layers' | 'wireframe'>('layers')
-
-    const layerShapeIds = useValue(
-      'shapeIds',
-      () => editor.getSortedChildIdsForParent(editor.getCurrentPageId()),
-      [editor]
-    )
-
-    const allPages = useValue(
-      'allPages',
-      () => editor.getPages(),
-      [editor]
-    )
-
-
-    const currentPageId = useValue(
-      'currentPageId',
-      () => editor.getCurrentPageId(),
-      [editor]
-    );
-
-    const handleAddPage = useCallback(() => {
-      if (editor) {
-        const newPage = editor.createPage({ name: `새 페이지 ${allPages.length + 1}` });
-        editor.setCurrentPage(newPage.id as TLPageId);
-        // 새 페이지에 기본 도형 추가 (예: 베이직 레이아웃)
-      }
-    },[editor, allPages])
-
-    const handleSelectPage = useCallback((pageId: TLPageId) => {
-      if(editor){
-        editor.setCurrentPage(pageId)
-      }
-    }, [editor]);
-
-    return (
-      <div className='layer-panel'>
-        <div className='layer-panel-header'> {/* 헤더 영역 분리 */}
-            {/* 탭 버튼들 */}
-            <div className='layer-panel-tabs'>
-                <button
-                    className={`tab-button ${activeTab === 'layers' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('layers')}
-                >
-                    레이어
-                </button>
-                <button
-                    className={`tab-button ${activeTab === 'wireframe' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('wireframe')}
-                >
-                    와이어프레임
-                </button>
-            </div>
-        </div>
-
-        {/* 탭 내용 */}
-        <div className='tab-content'>
-            {activeTab === 'layers' && (
-                <ShapeList
-                    shapeIds={layerShapeIds}
-                    depth={0}
-                />
-            )}
-            {activeTab === 'wireframe' && (
-                <WireframePagesPanel
-                    editor={editor}
-                    allPages={allPages}
-                    currentPageId={currentPageId}
-                    onPageSelect={handleSelectPage}
-                    onAddPage={handleAddPage}
-                />
-            )}
-        </div>
-      </div>
-    );
-  }
-}
-
+// tldraw 설정 통합
+const shapeUtils = [MyShapeUtil, SlideShapeUtil];
+const tools = [SlideShapeTool, MyButtonTool];
 const overrides: TLUiOverrides = {
-	actions(editor, actions) {
-		const $slides = computed('slides', () => getSlides(editor))
-		return {
-			...actions,
-			'next-slide': {
-				id: 'next-slide',
-				label: 'Next slide',
-				kbd: 'right',
-				onSelect() {
-					const slides = $slides.get()
-					const currentSlide = $currentSlide.get()
-					const index = slides.findIndex((s) => s.id === currentSlide?.id)
-					const nextSlide = slides[index + 1] ?? currentSlide ?? slides[0]
-					if (nextSlide) {
-						editor.stopCameraAnimation()
-						moveToSlide(editor, nextSlide)
-					}
-				},
-			},
-			'previous-slide': {
-				id: 'previous-slide',
-				label: 'Previous slide',
-				kbd: 'left',
-				onSelect() {
-					const slides = $slides.get()
-					const currentSlide = $currentSlide.get()
-					const index = slides.findIndex((s) => s.id === currentSlide?.id)
-					const previousSlide = slides[index - 1] ?? currentSlide ?? slides[slides.length - 1]
-					if (previousSlide) {
-						editor.stopCameraAnimation()
-						moveToSlide(editor, previousSlide)
-					}
-				},
-			},
-		}
-	},
-	tools(editor, tools) {
-		tools.slide = {
-			id: 'slide',
-			icon: 'group',
-			label: 'Slide',
-			kbd: 's',
-			onSelect: () => editor.setCurrentTool('slide'),
-		}
-		return tools
-	},
-}
-
-const customTools = [MyButtonTool]
-const customShapeUtil = [MyShapeUtil]
+  actions: customActions,
+  tools: customTools,
+};
 
 export default function ProjectEditorPage() {
   const assetUrls = getAssetUrlsByMetaUrl();
   const editorRef = useRef<Editor | null>(null);
-  const tldrawContainerRef = useRef<HTMLDivElement>(null); // Tldraw를 감싸는 div 참조
 
-  // const { projectId, initialTldrawContent } = useLoaderData() as {
-  //   projectId: string;
-  //   initialTldrawContent: any; //tldraw 문서타입
-  // }
+  const { projectId, initialContent, projectName, initialCanvasWidth, initialCanvasHeight } = useLoaderData() as {
+    projectId: string;
+    initialContent: StoreSnapshot<TLRecord>;
+    projectName: string;
+    initialCanvasWidth: number;
+    initialCanvasHeight: number;
+  };
 
-  const handleTldrawMount = useCallback((e: Editor) => {
-    editorRef.current = e;
-    console.log("Tldraw editor mounted.");
-    const customCanvasBounds: Box = new Box(
-      0,                  // x 좌표
-      0,                  // y 좌표
-      CUSTOM_CANVAS_WIDTH,  // 너비 (w)
-      CUSTOM_CANVAS_HEIGHT  // 높이 (h)
-    );
+  const fetcher = useFetcher();
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
-    e.setCameraOptions({
-      constraints: {
-        // 'contain': 카메라(뷰포트)가 정의된 bounds 안에 항상 내용을 포함하도록 제한합니다.
-        //           사용자가 bounds 밖으로 패닝하는 것을 제한하는 데 도움이 됩니다.
-        behavior: 'contain',
-        bounds: customCanvasBounds, // 제약을 적용할 영역
-        initialZoom: 'fit-max',
-        baseZoom: 'fit-max',
-        origin: { x: 0.5, y: 0.5 },
-        padding: { x: INITIAL_VIEW_PADDING, y: INITIAL_VIEW_PADDING },
-      },
+  const saveProject = useCallback(async () => {
+    const editor = editorRef.current;
+    if (!editor) return;
+
+    const currentContent = getSnapshot(editor.store);
+    fetcher.submit(JSON.stringify({ tldrawContent: currentContent }), {
+      method: 'PATCH',
+      action: `/sketches/${projectId}`,
+      encType: 'application/json',
     });
+    setHasUnsavedChanges(false);
+  }, [fetcher, projectId]);
 
-    e.zoomToBounds(customCanvasBounds, {
-      force: true,
-      animation: { duration: 500 }
-    });
+  const onMount = useCallback((editor: Editor) => {
+    editorRef.current = editor;
+    const dispose = handleEditorMount(editor, initialCanvasWidth, initialCanvasHeight, setHasUnsavedChanges);
+    // onMount에서 cleanup 함수를 반환하면 tldraw가 컴포넌트 unmount 시 호출해줍니다.
+    return dispose;
+  }, [initialCanvasWidth, initialCanvasHeight]);
 
-    // 사용자가 작업할 영역을 명확히 보여주기 위해 프레임 셰이프를 추가합니다.
-    // 이는 '시각적인' 가이드이며, 실제 그리기 영역을 하드 제한하지는 않습니다.
-    const currentPageId = e.getCurrentPageId();
-    const frameId = createShapeId('main-canvas-area-frame'); // 고유 ID
-
-    // 해당 프레임이 아직 없으면 생성합니다.
-    if (!e.getShape(frameId)) {
-        e.createShape<TLFrameShape>({
-            id: frameId,
-            parentId: currentPageId, // 현재 페이지에 추가
-            type: 'frame', // 프레임 타입 셰이프
-            x: 0, // 캔버스의 (0,0)에 위치
-            y: 0,
-            props: {
-                name: '작업 영역',
-                w: CUSTOM_CANVAS_WIDTH,
-                h: CUSTOM_CANVAS_HEIGHT,
-            },
-        });
-    }
-
-  }, [CUSTOM_CANVAS_WIDTH, CUSTOM_CANVAS_HEIGHT, INITIAL_VIEW_PADDING]); // useCallback 의존성 배열에 상수 추가
-
-
-  /** TODO 각 프로젝트마다 persistenceKey설정 초기값 .snapshot문서참고하여서 구현 */
   return (
-    <div style={{ position: 'fixed', inset: 0, display:'flex', flexDirection:'column'}}>
-      <NavBar />
+    <div style={{ position: 'fixed', inset: 0, display: 'flex', flexDirection: 'column' }}>
+      <EditorNavBar projectName={projectName}>
+        <button
+          onClick={saveProject}
+          disabled={!hasUnsavedChanges || fetcher.state === 'submitting'}
+          style={{
+            marginLeft: 'auto',
+            padding: '8px 16px',
+            backgroundColor: hasUnsavedChanges ? '#4CAF50' : '#cccccc',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: hasUnsavedChanges ? 'pointer' : 'not-allowed',
+          }}
+        >
+          {fetcher.state === 'submitting' ? '저장 중...' : (hasUnsavedChanges ? '저장' : '저장됨')}
+        </button>
+      </EditorNavBar>
       <Tldraw
-        persistenceKey='main-canvas-area-frame'
-        components={componets}
-        shapeUtils={[MyShapeUtil, SlideShapeUtil]}
-        tools={[SlideShapeTool, MyButtonTool]}
+        persistenceKey={projectId}
+        initialStore={initialContent}
+        components={customComponents}
+        shapeUtils={shapeUtils}
+        tools={tools}
         overrides={overrides}
         getShapeVisibility={(s) =>
           s.meta.force_show ? 'visible' : s.meta.hidden ? 'hidden' : 'inherit'
         }
         assetUrls={assetUrls}
-        onMount={handleTldrawMount}
-        // snapshot={snapshot as any as TLEditorSnapshot}
-      >
-      </Tldraw>
+        onMount={onMount}
+      />
     </div>
   );
 }
