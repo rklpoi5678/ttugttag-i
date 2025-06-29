@@ -12,6 +12,7 @@ import {
 	resizeBox,
 } from 'tldraw'
 
+
 // [1] 사용자 정의 도형의 타입 정의
 export type ICustomShape = TLBaseShape<
 	'my-custom-shape', // 고유한 도형 타입 이름
@@ -103,3 +104,31 @@ export class MyShapeUtil extends ShapeUtil<ICustomShape> {
 		return <rect width={shape.props.w} height={shape.props.h} />
 	}
 }
+
+/**
+ * @typedef {Object} AccordionShapeProps
+ * @property {string} title - 아코디언 헤더에 표시될 텍스트입니다.
+ * @property {string} content - 아코디언 본문에 표시될 텍스트입니다.
+ * @property {boolean} isOpen - 아코디언이 펼쳐져 있는지 여부입니다 (true: 펼쳐짐, false: 접힘).
+ * @property {number} w - 도형의 너비입니다.
+ * @property {number} h - 도형의 높이입니다. (실제 렌더링 시 동적으로 조정됩니다)
+ */
+export const AccordionShapeProps = T.object({
+	title: T.string,
+	content: T.string,
+	isOpen: T.boolean,
+	w: T.number,
+	h: T.number,
+  });
+  
+  /**
+   * @typedef {Object} AccordionShape
+   * @description
+   * Tldraw에서 사용될 아코디언 도형의 인터페이스입니다.
+   * TLBaseShape를 상속하며, AccordionShapeProps를 포함합니다.
+   */
+  export type AccordionShape = TLBaseShape<
+	'accordion', // 도형의 고유 타입 ID
+	typeof AccordionShapeProps
+  >;
+  

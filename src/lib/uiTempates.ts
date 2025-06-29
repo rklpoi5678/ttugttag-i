@@ -1,5 +1,7 @@
-// src/utils/uiTemplates.ts
-
+/**
+ * uiTempatest는 Tldraw 캔버스에 추가할 수 있는 모든 UI컴포넌트의 템플릿데이터만 모아두는 곳입니다
+ * 즉, 컴포넌트의 이름, 아이콘, 카테고리, 그리고 defaultProps와 같은 순수한 데이터만 담습니다.
+ */
 import type {
     TLShape, TLGeoShapeProps, TLTextShapeProps,
     // TLDefaultColorStyle, TLDefaultFillStyle, TLDefaultDashStyle, TLDefaultSizeStyle,
@@ -9,14 +11,15 @@ import type {
 
 // UI 템플릿의 타입을 정의합니다.
 export type UiTemplate = {
-    id: string;
-    name: string;
-    icon: string;
-    category: string;
-    subCategory?: string;
-    type: string;
-    defaultProps: Record<string, any>;
-    getChildren?: (x: number, y: number) => TLShape[];
+    id: string; // 고유 ID (common-button, accordion-interactive, bento-menu등)
+    name: string; // 사용자에게 표시될 이름
+    icon: string; // 툴바에 표시될 아이콘 아이콘 (Lucide Icon 이름 또는 이모지)
+    category: string; // 카테고리(UI Controls, Layout, Navigation등)
+    subCategory?: string; // 세부 카테고리
+    type: 'geo' | 'geo-group'| 'text' | 'accordion' | 'bento-menu' | 'custom-shape-type'; // Tldraw 도형 타입
+    defaultProps: Record<string, any>; // 해당 도형 타입에 따른 기본 속성 (TLGeoShapeProps, TLTextShapeProps 등)
+    getChildren?: (x: number, y: number) => TLShape[]; // 자식여부
+    prompt?: string; // AI 생성용 프롬프트 (선택 사항입니다.)
 };
 
 export const mainCategories = ['UI Controls'];
@@ -42,64 +45,54 @@ export const uiTemplates: UiTemplate[] = [
     {
         id: 'common-button',
         name: '버튼',
-        icon: '🖲️',
+        icon: 'Square', // Lucide-react Icon (예시)
         category: 'UI Controls',
         subCategory: 'Common',
-        type: 'geo', // TLGeoShape 타입 유지
+        type: 'geo', // TLGeoShape 타입 유지 (geo 도형을 활용)
         defaultProps: {
-            geo: 'rectangle', // TLGeoShapeProps에 필수적인 'geo' 속성
-            w: 100,
-            h: 40,
-            color: 'blue',
-            // label: '버튼', // <-- TLGeoShapeProps에 'label' 속성은 없습니다. 제거합니다.
-
-            dash: 'solid',
-            fill: 'solid',
-            size: 'm',
-            font: 'sans',
-            labelColor: 'black',
-            align: 'middle',
-            // richText를 사용하여 라벨 텍스트를 정의합니다.
-            richText: { // <-- 변경: '버튼' 텍스트를 포함하는 TLRichText 구조로 변경
-                type: 'doc',
-                content: [{
-                    type: 'paragraph',
-                    content: [{ type: 'text', text: '버튼' }]
-                }]
-            },
-            scale: 1,
-            verticalAlign: 'middle',
-            growY: 0,
-            url: '',
+            // TLGeoShapeProps에 필수적인 'geo' 속성
+            geo: 'rectangle', w: 100, h: 40, color: 'blue', fill: 'solid',
+            dash: 'solid', size: 'm', font: 'sans', labelColor: 'black', align: 'middle',
+            richText: { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: '버튼' }] }]}, // 텍스트 정의
+            scale: 1, verticalAlign: 'middle', growY: 0, url: '',
         } as TLGeoShapeProps, // <-- TLGeoShapeProps로 명시적 타입 캐스팅
     },
     {
-        id: 'common-text',
-        name: '텍스트',
-        icon: '🅰️',
+        id: 'accordion-interactive',
+        name: '아코디언',
+        icon: 'PanelBottom',
         category: 'UI Controls',
         subCategory: 'Common',
-        type: 'text', // TLTextShape 타입
+        type: 'accordion', // 사용자 정의 TLTextShape 타입
         defaultProps: {
-            text: '텍스트 입력', // 실제 텍스트 내용
-            size: 'm',
-            color: 'black',
-            font: 'sans',
-
-            textAlign: 'middle',
-            autoSize: true,
-            w: 100,
-            h: 30,
-            // TLTextShapeProps도 richText를 사용합니다.
-            richText: { // <-- 변경: '텍스트 입력' 텍스트를 포함하는 TLRichText 구조로 변경
-                type: 'doc',
-                content: [{
-                    type: 'paragraph',
-                    content: [{ type: 'text', text: '텍스트 입력' }]
-                }]
-            },
-            scale: 1,
-        } as TLTextShapeProps,
+            title: '아코디언 제목', content: "아코디언 내용", isOpen: false
+        } as unknown as TLTextShapeProps,
     },
-    // MyCustomShape 템플릿은 현재 논의에서 제외
+    {
+        id: "accordion-model",
+        name: "아코디언 모형",
+        icon: "PanelBottomClose", // Lucide-react Icon (예시)
+        category: "UI Controls",
+        type: "geo-group", // 여러 geo 도형을 그룹화하여 생성함을 나타내는 사용자 정의 타입 (툴에서 해석)
+        defaultProps: { // 이 경우는 툴에서 이 정보를 파싱하여 여러 geo 도형을 생성
+          header: { geo: "rectangle", w: 200, h: 40, richText: { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "헤더" }] }] }, color: "light-blue" },
+          content: { geo: "rectangle", w: 200, h: 80, richText: { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "내용" }] }] }, color: "grey" },
+        }
+      },
+      {
+        id: "bento-menu",
+        name: "벤토 메뉴",
+        icon: "Grid", // Lucide-react Icon (예시)
+        category: "Layout",
+        type: "bento-menu", // 사용자 정의 'bento-menu' 도형 타입
+        defaultProps: {
+          items: [{ text: "Item 1", icon: "home" }, { text: "Item 2", icon: "settings" }],
+          columns: 2, gap: 16
+        }
+      },
+    // ... 30개 이상의 다른 UI 컴포넌트 템플릿
 ];
+
+export const getUiTemplateById = (id: string): UiTemplate | undefined => {
+    return uiTemplates.find(template => template.id === id);
+};

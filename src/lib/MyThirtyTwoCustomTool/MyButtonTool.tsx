@@ -9,24 +9,31 @@ import type { UiTemplate } from '@/lib/uiTempates'; // template 타입 임포트
  * 클릭된 위치에 미리 정의된 속성을 가진 'geo' 타입의 도형(버튼)을 생성
  */
 export class MyButtonTool extends StateNode {
+  
+  //#region 상태
   /**
    * @static
    * @property {string} id - 도구의 고유 식별자입니다.
    */
+
   static override id = 'my-button-tool'; // 고유 ID
 
   /**
    * @static
    * @property {string} inital - 도구의 초기 상태입니다.
    */
+
   static override initial = 'idle';
 
   /**
    * @static
    * @property {Function} children - 이 도구가 가질 수 있는 자식 상태를 정의합니다.
    */
-  static override children = () => [Idle];
 
+  static override children = () => [Idle];
+  //#endregion
+
+  //#region 프로퍼티
   /**
    * @private
    * @static
@@ -60,7 +67,9 @@ export class MyButtonTool extends StateNode {
       url:"" //연결된 URL (선택사항)
     }
   };
+  //#endregion
 
+  //#region 메서드
   /**
    * @method onPointerDown
    * @param {TLPointerEvent} event - 포인터 이벤트 객체
@@ -97,6 +106,7 @@ export class MyButtonTool extends StateNode {
     // 도형 생성 후 ,사용자가 도형을 바로 선택하거나 이동할 수 있도록 'select'도구로 전환합니다.
     this.editor.setCurrentTool('select');
   };
+  //#endregion
 }
 
 /**
